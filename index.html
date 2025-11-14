@@ -1128,6 +1128,48 @@
                 font-size: 25px;
             }
         }
+
+        @media (min-width: 769px) {
+            .menu-toggle,
+            .nav-menu-overlay {
+                display: none;
+            }
+
+            .nav-menu {
+                position: static;
+                right: 0;
+                width: auto;
+                height: auto;
+                background: none;
+                border: none;
+                box-shadow: none;
+                padding: 0;
+                transition: none;
+                overflow-y: visible;
+            }
+
+            .nav-menu.active {
+                right: 0;
+            }
+
+            .nav-links {
+                flex-direction: row;
+                gap: 25px;
+            }
+
+            .nav-link {
+                padding: 5px;
+                border-radius: 0;
+                border: 1px solid transparent; 
+            }
+
+            .nav-link:hover {
+                background: none;
+                color: #ffffff;
+                border-color: transparent;
+                transform: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1141,19 +1183,18 @@
             <button class="menu-toggle" id="menuToggle">
                 <i class="fas fa-bars"></i>
             </button>
+            <div class="nav-menu" id="navMenu">
+                <ul class="nav-links">
+                    <li><a href="#home" class="nav-link" data-section="home">Home</a></li>
+                    <li><a href="#languages" class="nav-link" data-section="languages">Languages</a></li>
+                    <li><a href="#tech-stack" class="nav-link" data-section="tech-stack">Programming Languages</a></li>
+                    <li><a href="#projects" class="nav-link" data-section="projects">My Projects</a></li>
+                </ul>
+            </div>
         </div>
     </nav>
 
     <div class="nav-menu-overlay" id="menuOverlay"></div>
-
-    <div class="nav-menu" id="navMenu">
-        <ul class="nav-links">
-            <li><a href="#home" class="nav-link" data-section="home">Home</a></li>
-            <li><a href="#languages" class="nav-link" data-section="languages">Languages</a></li>
-            <li><a href="#tech-stack" class="nav-link" data-section="tech-stack">Programming Languages</a></li>
-            <li><a href="#projects" class="nav-link" data-section="projects">My Projects</a></li>
-        </ul>
-    </div>
 
     <header class="coder" id="home">
         <img id="coder-avatar" class="coder-avatar" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Profile Picture">
@@ -1445,7 +1486,9 @@
                         }
                     }
                     
-                    toggleMenu();
+                    if (window.innerWidth <= 768) {
+                        toggleMenu();
+                    }
                 });
             });
         }
@@ -1745,7 +1788,7 @@
                 avatarElement.src = avatarUrl;
                 avatarElement.style.display = 'block';
             } else {
-                avatarUrl = `${CdnBaseUrl}embed/avatars/${discordUser.discriminator % 5}.png`;
+                avatarUrl = `${CDcdnBaseUrl}embed/avatars/${discordUser.discriminator % 5}.png`;
                 avatarElement.src = avatarUrl;
                 avatarElement.style.display = 'block';
             }
