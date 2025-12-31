@@ -1,11 +1,11 @@
-[![Discord Presence](https://lanyard.cnrad.dev/api/1099039269391171765?theme=dark&bg=000000&animated=false&hideDiscrim=true&borderRadius=30px&idleMessage=bruh...%20nvm%20%3A%29)](https://discord.com/users/1099039269391171765)
+[![Discord Presence](https://lanyard.cnrad.dev/api/1099039269391171765?theme=dark&bg=000000&animated=true&hideDiscrim=true&borderRadius=30px&idleMessage=bruh...%20nvm%20%3A%29&showDisplayName=true)](https://discord.com/users/1099039269391171765)
 
 ## discord activity
 
-**by:**
+**by:**  
 [coder.gg](https://discord.com/users/1099039269391171765) (me)
 
-**project link:**
+**project link:**  
 [https://github.com/il1ll/discord-activity](https://github.com/il1ll/discord-activity)
 
 ## contact info
