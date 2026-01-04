@@ -2282,9 +2282,6 @@
             if (customStatus.state) {
                 const textSpan = document.createElement('span');
                 textSpan.textContent = customStatus.state;
-                textSpan.style.whiteSpace = 'nowrap';
-                textSpan.style.overflow = 'hidden';
-                textSpan.style.textOverflow = 'ellipsis';
                 customStatusElement.appendChild(textSpan);
                 hasStatusContent = true;
             }
