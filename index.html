@@ -28,9 +28,28 @@
             font-family: 'Nunito', sans-serif;
         }
         
+        :root {
+            --primary-color: #c4a7e7;
+            --secondary-color: #232136;
+            --tertiary-color: #2a273f;
+            --text-color: #e0def4;
+            --muted-text: #908caa;
+            --border-color: #524f67;
+            --hover-color: #3a3757;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            --social-shadow: rgba(196, 167, 231, 0.3);
+            --overlay-bg: rgba(35, 33, 54, 0.85);
+        }
+        
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+            position: relative;
+        }
+
         body {
-            background-color: #232136;
-            color: #e0def4;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
             min-height: 100vh;
             padding: 120px 20px 40px;
             display: flex;
@@ -38,8 +57,58 @@
             align-items: center;
             flex-direction: column;
             gap: 40px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
             max-width: 1200px;
             margin: 0 auto;
+        }
+        
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 30px;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .loader {
+            width: 70px;
+            height: 70px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .loading-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 2px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
         }
         
         .navbar {
@@ -47,13 +116,13 @@
             top: 0;
             left: 0;
             width: 100%;
-            background: #2a273f;
+            background: var(--tertiary-color);
             padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 1002;
-            border-bottom: 1px solid #524f67;
+            border-bottom: 1px solid var(--border-color);
         }
         
         .nav-left {
@@ -66,14 +135,14 @@
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            border: 2px solid #c4a7e7;
+            border: 2px solid var(--primary-color);
             object-fit: cover;
         }
         
         .nav-name {
             font-size: 1.8rem;
             font-weight: 700;
-            background: linear-gradient(120deg, #2a273f, #c4a7e7);
+            background: linear-gradient(120deg, var(--tertiary-color), var(--primary-color));
             background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -85,9 +154,9 @@
         }
         
         .menu-toggle {
-            background: #2a273f;
-            border: 1px solid #524f67;
-            color: #e0def4;
+            background: var(--tertiary-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
             font-size: 1.5rem;
             cursor: pointer;
             padding: 10px 14px;
@@ -96,7 +165,7 @@
         }
         
         .menu-toggle:hover {
-            background: #3a3757;
+            background: var(--hover-color);
         }
         
         .nav-menu {
@@ -105,8 +174,8 @@
             right: -100%;
             width: 300px;
             height: calc(100vh - 80px);
-            background: #2a273f;
-            border-left: 1px solid #524f67;
+            background: var(--tertiary-color);
+            border-left: 1px solid var(--border-color);
             padding: 20px;
             transition: right 0.3s ease;
             z-index: 1001;
@@ -123,7 +192,7 @@
             left: 0;
             width: 100%;
             height: calc(100vh - 80px);
-            background: rgba(35, 33, 54, 0.7);
+            background: var(--overlay-bg);
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
@@ -143,9 +212,9 @@
         }
         
         .nav-link {
-            color: #e0def4;
+            color: var(--text-color);
             text-decoration: none;
-            border: 1px solid #524f67;
+            border: 1px solid var(--border-color);
             padding: 8px 18px;
             border-radius: 5px;
             display: block;
@@ -154,31 +223,31 @@
         }
         
         .nav-link:hover {
-            background: #3a3757;
+            background: var(--hover-color);
         }
         
         .section-container {
             width: 100%;
-            background: #2a273f;
+            background: var(--tertiary-color);
             border-radius: 20px;
             padding: 30px;
-            border: 1px solid #524f67;
+            border: 1px solid var(--border-color);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             scroll-margin-top: 100px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 40px var(--shadow-color);
         }
         
         .section-container:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 15px 50px var(--shadow-color);
         }
         
         .section-container h2 {
             font-size: 2.5rem;
-            color: #e0def4;
+            color: var(--text-color);
             margin-bottom: 25px;
             padding-bottom: 15px;
-            border-bottom: 2px solid #c4a7e7;
+            border-bottom: 2px solid var(--primary-color);
             text-align: center;
             position: relative;
         }
@@ -191,7 +260,7 @@
             transform: translateX(-50%);
             width: 100px;
             height: 3px;
-            background: #c4a7e7;
+            background: var(--primary-color);
             border-radius: 3px;
         }
         
@@ -199,18 +268,18 @@
             width: 100%;
             text-align: center;
             padding: 30px;
-            background: #2a273f;
+            background: var(--tertiary-color);
             border-radius: 20px;
-            border: 1px solid #524f67;
+            border: 1px solid var(--border-color);
             scroll-margin-top: 100px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 40px var(--shadow-color);
         }
         
         .coder-avatar {
             width: 200px;
             height: 200px;
             border-radius: 50%;
-            border: 5px solid #c4a7e7;
+            border: 5px solid var(--primary-color);
             object-fit: cover;
             margin-bottom: 25px;
             transition: transform 0.3s ease;
@@ -224,7 +293,7 @@
             font-size: 3.5rem;
             font-weight: 700;
             margin-bottom: 15px;
-            background: linear-gradient(120deg, #2a273f, #c4a7e7);
+            background: linear-gradient(120deg, var(--tertiary-color), var(--primary-color));
             background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -232,7 +301,7 @@
         
         .coder-description {
             font-size: 1.2rem;
-            color: #908caa;
+            color: var(--muted-text);
             max-width: 600px;
             margin: 0 auto;
             line-height: 1.6;
@@ -253,19 +322,19 @@
             gap: 10px;
             font-size: 1rem;
             font-weight: 600;
-            background: #232136;
+            background: var(--secondary-color);
             padding: 20px;
             border-radius: 15px;
             min-width: 140px;
             text-align: center;
-            border: 1px solid #524f67;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
         }
         
         .language-list li:hover, .tech-list li:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-            background: #3a3757;
+            box-shadow: 0 8px 20px var(--shadow-color);
+            border-color: var(--primary-color);
         }
         
         .language-list span {
@@ -279,7 +348,7 @@
         
         .tech-icon {
             font-size: 56px;
-            color: #c4a7e7;
+            color: #1DB954;
         }
         
         .project-filters {
@@ -297,9 +366,9 @@
         }
         
         .dropdown-btn {
-            background: #2a273f;
-            color: #e0def4;
-            border: 1px solid #524f67;
+            background: var(--tertiary-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
             padding: 14px 28px;
             border-radius: 12px;
             font-size: 1rem;
@@ -309,12 +378,12 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 15px var(--shadow-color);
         }
         
         .dropdown-btn:hover {
-            background: #3a3757;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            background: var(--hover-color);
+            box-shadow: 0 6px 20px var(--shadow-color);
             transform: translateY(-2px);
         }
         
@@ -331,12 +400,12 @@
         .dropdown-content {
             display: none;
             position: absolute;
-            background: #2a273f;
+            background: var(--tertiary-color);
             min-width: 250px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 8px 16px var(--shadow-color);
             z-index: 1;
             border-radius: 10px;
-            border: 1px solid #524f67;
+            border: 1px solid var(--border-color);
             top: 100%;
             left: 0;
             margin-top: 5px;
@@ -353,7 +422,7 @@
         }
         
         .dropdown-content a {
-            color: #e0def4;
+            color: var(--text-color);
             padding: 12px 20px;
             text-decoration: none;
             display: flex;
@@ -371,50 +440,62 @@
         }
         
         .dropdown-content a:hover {
-            background: #3a3757;
-            color: #c4a7e7;
+            background: var(--hover-color);
+            color: var(--primary-color);
             padding-left: 30px;
         }
         
         .dropdown-content a.active {
-            background: #c4a7e7;
-            color: #2a273f;
+            background: var(--primary-color);
+            color: var(--tertiary-color);
         }
         
         .project-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: 1fr;
             gap: 30px;
             margin-bottom: 30px;
         }
         
+        @media (min-width: 768px) {
+            .project-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (min-width: 1200px) {
+            .project-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
         .project-card {
-            background: #232136;
+            background: var(--secondary-color);
             border-radius: 15px;
             padding: 25px;
-            border: 1px solid #524f67;
+            border: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
             height: 100%;
         }
         
         .project-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-            background: #3a3757;
+            box-shadow: 0 15px 40px var(--shadow-color);
+            border-color: var(--primary-color);
         }
         
         .project-card h3 {
             font-size: 1.5rem;
-            color: #c4a7e7;
+            color: var(--primary-color);
             margin-bottom: 15px;
         }
         
         .project-card p {
             font-size: 1rem;
-            color: #908caa;
+            color: var(--muted-text);
             line-height: 1.6;
             flex-grow: 1;
             margin-bottom: 20px;
@@ -434,7 +515,7 @@
         
         .project-tech-icon {
             font-size: 28px;
-            color: #c4a7e7;
+            color: #1DB954;
         }
         
         .project-links {
@@ -456,25 +537,25 @@
         }
         
         .btn-source {
-            background: #c4a7e7;
-            color: #2a273f;
+            background: var(--primary-color);
+            color: var(--tertiary-color);
         }
         
         .btn-source:hover {
-            background: #b896e0;
+            background: var(--hover-color);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(196, 167, 231, 0.3);
+            box-shadow: 0 5px 15px var(--shadow-color);
         }
         
         .btn-live {
-            background: #9ccfd8;
-            color: #2a273f;
+            background: #1DB954;
+            color: var(--tertiary-color);
         }
         
         .btn-live:hover {
-            background: #8abdc6;
+            background: #1aa34a;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(156, 207, 216, 0.3);
+            box-shadow: 0 5px 15px var(--shadow-color);
         }
         
         .pagination {
@@ -486,9 +567,9 @@
         }
         
         .pagination-btn {
-            background: #232136;
-            color: #e0def4;
-            border: 1px solid #524f67;
+            background: var(--secondary-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
             padding: 10px 20px;
             border-radius: 10px;
             cursor: pointer;
@@ -497,10 +578,10 @@
         }
         
         .pagination-btn:hover:not(:disabled) {
-            background: #c4a7e7;
-            color: #2a273f;
+            background: var(--primary-color);
+            color: var(--tertiary-color);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(196, 167, 231, 0.3);
+            box-shadow: 0 5px 15px var(--shadow-color);
         }
         
         .pagination-btn:disabled {
@@ -509,7 +590,7 @@
         }
         
         .pagination-info {
-            color: #908caa;
+            color: var(--muted-text);
             font-weight: 600;
         }
         
@@ -518,6 +599,7 @@
             flex-direction: column;
             gap: 15px;
             width: 448px;
+            max-width: 100%;
         }
         
         .profile-banner {
@@ -544,10 +626,10 @@
         }
         
         .profile-card {
-            background: #232136;
+            background: var(--secondary-color);
             border-radius: 0 0 15px 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            border: 1px solid #524f67;
+            box-shadow: 0 10px 40px var(--shadow-color);
+            border: 1px solid var(--border-color);
             position: relative;
             overflow: hidden;
             width: 100%;
@@ -606,7 +688,7 @@
             width: 14px;
             height: 14px;
             border-radius: 50%;
-            border: 3px solid #232136;
+            border: 3px solid var(--secondary-color);
         }
         
         .status-dnd { background-color: #eb6f92; }
@@ -639,7 +721,7 @@
         .display-name {
             font-size: 16px;
             font-weight: 700;
-            color: #e0def4;
+            color: var(--text-color);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -649,12 +731,12 @@
             display: flex;
             align-items: center;
             gap: 4px;
-            background: #524f67;
+            background: var(--border-color);
             border-radius: 5px;
             padding: 3px 6px;
             font-size: 11px;
             font-weight: 600;
-            color: #908caa;
+            color: var(--muted-text);
             flex-shrink: 0;
         }
         
@@ -701,7 +783,7 @@
             display: flex;
             align-items: center;
             min-width: 0;
-            color: #908caa;
+            color: var(--muted-text);
             font-size: 12px;
             margin-top: 2px;
         }
@@ -743,8 +825,8 @@
             padding: 15px;
             width: 100%;
             display: none;
-            background: #2a273f;
-            border: 1px solid #524f67;
+            background: var(--tertiary-color);
+            border: 1px solid var(--border-color);
         }
         
         .spotify-card {
@@ -771,7 +853,7 @@
         .spotify-title {
             font-weight: 700;
             font-size: 12px;
-            color: #908caa;
+            color: var(--muted-text);
             text-transform: uppercase;
         }
         
@@ -797,14 +879,14 @@
             font-weight: 600;
             margin-bottom: 4px;
             font-size: 14px;
-            color: #e0def4;
+            color: var(--text-color);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         
         .track-artist {
-            color: #908caa;
+            color: var(--muted-text);
             font-size: 12px;
             margin-bottom: 4px;
             white-space: nowrap;
@@ -815,7 +897,7 @@
         .progress-container {
             width: 100%;
             height: 3px;
-            background: #524f67;
+            background: var(--border-color);
             border-radius: 2px;
             overflow: hidden;
             margin-top: 6px;
@@ -823,7 +905,7 @@
         
         .progress-bar {
             height: 100%;
-            background: #c4a7e7;
+            background: #1DB954;
             border-radius: 2px;
             width: 0%;
             transition: width 0.1s linear;
@@ -833,7 +915,7 @@
             display: flex;
             justify-content: space-between;
             font-size: 11px;
-            color: #908caa;
+            color: var(--muted-text);
             margin-top: 4px;
         }
         
@@ -852,8 +934,8 @@
             padding: 15px;
             width: 100%;
             display: none;
-            background: #2a273f;
-            border: 1px solid #524f67;
+            background: var(--tertiary-color);
+            border: 1px solid var(--border-color);
         }
         
         .activity-card {
@@ -880,7 +962,7 @@
         .activity-title {
             font-weight: 700;
             font-size: 12px;
-            color: #908caa;
+            color: var(--muted-text);
             text-transform: uppercase;
         }
         
@@ -911,7 +993,7 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            border: 2px solid #2a273f;
+            border: 2px solid var(--tertiary-color);
             object-fit: cover;
         }
         
@@ -924,14 +1006,14 @@
             font-weight: 600;
             margin-bottom: 4px;
             font-size: 14px;
-            color: #e0def4;
+            color: var(--text-color);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         
         .activity-details {
-            color: #908caa;
+            color: var(--muted-text);
             font-size: 12px;
             margin-bottom: 4px;
             white-space: nowrap;
@@ -940,7 +1022,7 @@
         }
         
         .activity-state {
-            color: #908caa;
+            color: var(--muted-text);
             font-size: 12px;
             margin-bottom: 4px;
             white-space: nowrap;
@@ -952,7 +1034,7 @@
             display: flex;
             align-items: center;
             gap: 4px;
-            color: #908caa;
+            color: var(--muted-text);
             font-size: 11px;
             margin-top: 4px;
         }
@@ -978,11 +1060,11 @@
         }
         
         .activity-button {
-            background: #524f67;
+            background: var(--border-color);
             border: none;
             border-radius: 14px;
             padding: 10px 16px;
-            color: #e0def4;
+            color: var(--text-color);
             font-size: 12px;
             font-weight: 500;
             cursor: pointer;
@@ -997,7 +1079,7 @@
         }
         
         .activity-button:hover {
-            background: #6e6a86;
+            background: var(--hover-color);
         }
         
         .button-icon {
@@ -1006,7 +1088,7 @@
         }
         
         .spotify-button-icon {
-            color: #c4a7e7;
+            color: #1DB954;
         }
         
         .social-apps {
@@ -1022,13 +1104,18 @@
             align-items: center;
             gap: 10px;
             text-decoration: none;
-            color: #908caa;
+            color: var(--muted-text);
             transition: all 0.3s ease;
         }
         
         .social-app:hover {
             transform: translateY(-5px);
-            color: #c4a7e7;
+            color: var(--primary-color);
+        }
+        
+        .social-app:hover .app-icon {
+            box-shadow: 0 8px 20px var(--social-shadow);
+            border-color: var(--primary-color);
         }
         
         .app-icon {
@@ -1039,14 +1126,9 @@
             align-items: center;
             justify-content: center;
             font-size: 30px;
-            background: #2a273f;
-            border: 1px solid #524f67;
+            background: var(--tertiary-color);
+            border: 1px solid var(--border-color);
             transition: all 0.3s ease;
-        }
-        
-        .social-app:hover .app-icon {
-            background: #3a3757;
-            box-shadow: 0 8px 20px rgba(196, 167, 231, 0.3);
         }
         
         .app-name {
@@ -1055,8 +1137,8 @@
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         .error {
@@ -1101,10 +1183,6 @@
             
             .coder-name {
                 font-size: 2.5rem;
-            }
-            
-            .project-grid {
-                grid-template-columns: 1fr;
             }
             
             .container {
@@ -1159,7 +1237,7 @@
             
             .nav-link:hover {
                 background: none;
-                color: #e0def4;
+                color: var(--text-color);
                 border-color: transparent;
                 transform: none;
             }
@@ -1167,6 +1245,11 @@
     </style>
 </head>
 <body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loader"></div>
+        <div class="loading-text">Loading...</div>
+    </div>
+    
     <nav class="navbar">
         <div class="nav-left">
             <img id="nav-avatar" class="nav-avatar" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Profile Picture">
@@ -1221,8 +1304,8 @@
     <div class="container">
         <div id="spotifyCard" class="spotify-card">
             <div class="spotify-header">
-                <svg class="spotify-logo" viewBox="0 0 496 512" fill="#c4a7e7">
-                    <path d="M248 8C111.1 8 0 119.1 0 256s111.1 248 248 248 248-111.1 248-248S384.9 8 248 8zm100.7 364.9c-4.2 0-6.8-1.3-10.7-3.6-62.4-37.6-135-39.2-206.7-24.5-3.9 1-9 2.6-11.9 2.6-9.7 0-15.8-7.7-15.8-15.8 0-10.3 6.1-15.2 13.6-16.8 81.9-18.1 165.6-16.5 237 26.2 6.1 3.9 9.7 7.4 9.7 16.5s-7.1 15.4-15.2 15.4zm26.9-65.6c-5.2 0-8.7-2.3-12.3-4.2-62.5-37-155.7-51.9-238.6-29.4-4.8 1.3-7.4 2.6-11.9 2.6-10.7 0-19.4-8.7-19.4-19.4s5.2-17.8 15.5-20.7c27.8-7.8 56.2-13.6 97.8-13.6 64.9 0 127.6 16.1 177 45.5 8.1 4.8 11.3 11 11.3 19.7-.1 10.8-8.5 19.5-19.4 19.5zm31-76.2c-5.2 0-8.4-1.3-12.9-3.9-71.2-42.5-198.5-52.7-280.9-29.7-3.6 1-8.1 2.6-12.9 2.6-13.2 0-23.3-10.3-23.3-23.6 0-13.6 8.4-21.3 17.4-23.9 35.2-10.3 74.6-15.2 117.5-15.2 73 0 149.5 15.2 205.4 47.8 7.8 4.5 12.9 10.7 12.9 22.6 0 13.6-11 23.3-23.2 23.3z"/>
+                <svg class="spotify-logo" viewBox="0 0 496 512" fill="#1DB954">
+                    <path d="M248 8C111.1 8 0 119.1 0 256s111.1 248 248 248 248-111.1 248-248S384.9 8 248 8zm100.7 364.9c-4.2 0-6.8-1.3 -10.7-3.6-62.4-37.6-135-39.2-206.7-24.5-3.9 1-9 2.6-11.9 2.6-9.7 0-15.8-7.7-15.8-15.8 0-10.3 6.1-15.2 13.6-16.8 81.9-18.1 165.6-16.5 237 26.2 6.1 3.9 9.7 7.4 9.7 16.5s-7.1 15.4-15.2 15.4zm26.9-65.6c-5.2 0-8.7-2.3-12.3-4.2-62.5-37-155.7-51.9-238.6-29.4-4.8 1.3-7.4 2.6-11.9 2.6-10.7 0-19.4-8.7-19.4-19.4s5.2-17.8 15.5-20.7c27.8-7.8 56.2-13.6 97.8-13.6 64.9 0 127.6 16.1 177 45.5 8.1 4.5 11.3 11 11.3 19.7-.1 10.8-8.5 19.5-19.4 19.5zm31-76.2c-5.2 0-8.4-1.3-12.9-3.9-71.2-42.5-198.5-52.7-280.9-29.7-3.6 1-8.1 2.6-12.9 2.6-13.2 0-23.3-10.3-23.3-23.6 0-13.6 8.4-21.3 17.4-23.9 35.2-10.3 74.6-15.2 117.5-15.2 73 0 149.5 15.2 205.4 47.8 7.8 4.5 12.9 10.7 12.9 22.6 0 13.6-11 23.3-23.2 23.3z"/>
                 </svg>
                 <div class="spotify-title">Listening to Spotify</div>
             </div>
@@ -1320,7 +1403,7 @@
                         <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" style="width: 16px; height: 16px;"> Python
                     </a>
                     <a href="#" data-filter="nodejs">
-                        <i class="devicon-nodejs-plain colored"></i> Node.js
+                        <i class="devicon-nodejs-plain" style="color: #1DB954;"></i> Node.js
                     </a>
                     <a href="#" data-filter="html">
                         <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" alt="HTML" style="width: 16px; height: 16px;"> HTML
@@ -1493,25 +1576,189 @@
         let heartbeatInterval = null;
         let activityIntervals = {};
         let currentPage = 1;
-        const projectsPerPage = 4;
         let currentFilter = 'all';
         let allProjects = [];
         let lastCustomStatus = null;
         let lastActivities = [];
         let lastSpotifyData = null;
+        let isDataLoaded = false;
+        
+        function getProjectsPerPage() {
+            if (window.innerWidth >= 1200) return 6;
+            if (window.innerWidth >= 768) return 4;
+            return 4;
+        }
+
+        function extractColorFromImage(imageUrl) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = "Anonymous";
+                img.src = imageUrl;
+                
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imageData.data;
+                    
+                    let r = 0, g = 0, b = 0;
+                    let count = 0;
+                    
+                    for (let i = 0; i < data.length; i += 16) {
+                        r += data[i];
+                        g += data[i + 1];
+                        b += data[i + 2];
+                        count++;
+                    }
+                    
+                    r = Math.floor(r / count);
+                    g = Math.floor(g / count);
+                    b = Math.floor(b / count);
+                    
+                    resolve({ r, g, b });
+                };
+                
+                img.onerror = () => {
+                    resolve({ r: 196, g: 167, b: 231 });
+                };
+            });
+        }
+
+        function updateTheme(color) {
+            const root = document.documentElement;
+            root.style.setProperty('--primary-color', `rgb(${color.r}, ${color.g}, ${color.b})`);
+            
+            const hslColor = rgbToHsl(color.r, color.g, color.b);
+            
+            const primaryLightness = hslColor.l;
+            
+            let darkerR, darkerG, darkerB;
+
+            if (primaryLightness > 60) {
+                const darkR = Math.max(0, Math.floor(color.r * 0.3));
+                const darkG = Math.max(0, Math.floor(color.g * 0.3));
+                const darkB = Math.max(0, Math.floor(color.b * 0.3));
+                
+                darkerR = Math.max(0, Math.floor(color.r * 0.15));
+                darkerG = Math.max(0, Math.floor(color.g * 0.15));
+                darkerB = Math.max(0, Math.floor(color.b * 0.15));
+                
+                const borderR = Math.floor(color.r * 0.4);
+                const borderG = Math.floor(color.g * 0.4);
+                const borderB = Math.floor(color.b * 0.4);
+                
+                const hoverR = Math.min(255, Math.floor(color.r * 1.3));
+                const hoverG = Math.min(255, Math.floor(color.g * 1.3));
+                const hoverB = Math.min(255, Math.floor(color.b * 1.3));
+                
+                root.style.setProperty('--secondary-color', `rgb(${darkerR}, ${darkerG}, ${darkerB})`);
+                root.style.setProperty('--tertiary-color', `rgb(${darkR}, ${darkG}, ${darkB})`);
+                root.style.setProperty('--text-color', '#ffffff');
+                root.style.setProperty('--muted-text', `rgb(${color.r * 0.8}, ${color.g * 0.8}, ${color.b * 0.8})`);
+                root.style.setProperty('--border-color', `rgb(${borderR}, ${borderG}, ${borderB})`);
+                root.style.setProperty('--hover-color', `rgb(${hoverR}, ${hoverG}, ${hoverB})`);
+                root.style.setProperty('--social-shadow', `rgba(${color.r}, ${color.g}, ${color.b}, 0.3)`);
+            } else {
+                const lightR = Math.min(255, Math.floor(color.r * 1.3));
+                const lightG = Math.min(255, Math.floor(color.g * 1.3));
+                const lightB = Math.min(255, Math.floor(color.b * 1.3));
+                
+                darkerR = Math.max(0, Math.floor(color.r * 0.15));
+                darkerG = Math.max(0, Math.floor(color.g * 0.15));
+                darkerB = Math.max(0, Math.floor(color.b * 0.15));
+                
+                const borderR = Math.floor(color.r * 0.4);
+                const borderG = Math.floor(color.g * 0.4);
+                const borderB = Math.floor(color.b * 0.4);
+                
+                const hoverR = Math.min(255, Math.floor(color.r * 1.5));
+                const hoverG = Math.min(255, Math.floor(color.g * 1.5));
+                const hoverB = Math.min(255, Math.floor(color.b * 1.5));
+                
+                root.style.setProperty('--secondary-color', `rgb(${darkerR}, ${darkerG}, ${darkerB})`);
+                root.style.setProperty('--tertiary-color', `rgb(${color.r * 0.2}, ${color.g * 0.2}, ${color.b * 0.2})`);
+                root.style.setProperty('--text-color', `rgb(${lightR}, ${lightG}, ${lightB})`);
+                root.style.setProperty('--muted-text', `rgb(${color.r * 0.7}, ${color.g * 0.7}, ${color.b * 0.7})`);
+                root.style.setProperty('--border-color', `rgb(${borderR}, ${borderG}, ${borderB})`);
+                root.style.setProperty('--hover-color', `rgb(${hoverR}, ${hoverG}, ${hoverB})`);
+                root.style.setProperty('--social-shadow', `rgba(${color.r}, ${color.g}, ${color.b}, 0.3)`);
+            }
+            
+            root.style.setProperty('--shadow-color', `rgba(${color.r * 0.2}, ${color.g * 0.2}, ${color.b * 0.2}, 0.5)`);
+            root.style.setProperty('--overlay-bg', `rgba(${darkerR}, ${darkerG}, ${darkerB}, 0.85)`);
+        }
+
+        function rgbToHsl(r, g, b) {
+            r /= 255;
+            g /= 255;
+            b /= 255;
+            
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+            
+            if (max === min) {
+                h = s = 0;
+            } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                
+                h /= 6;
+            }
+            
+            return {
+                h: h * 360,
+                s: s * 100,
+                l: l * 100
+            };
+        }
+
+        function hideLoadingScreen() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            loadingScreen.classList.add('hidden');
+            
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                document.body.style.animation = 'fadeIn 0.5s ease forwards';
+            }, 500);
+        }
+
+        function showLoadingScreen() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            loadingScreen.style.display = 'flex';
+            loadingScreen.classList.remove('hidden');
+            document.body.style.opacity = '0';
+        }
 
         function initializeNavigation() {
             const menuToggle = document.getElementById('menuToggle');
             const navMenu = document.getElementById('navMenu');
             const menuOverlay = document.getElementById('menuOverlay');
             const navLinks = document.querySelectorAll('.nav-link');
+            
             function toggleMenu() {
                 navMenu.classList.toggle('active');
                 menuOverlay.classList.toggle('active');
-                menuToggle.innerHTML = navMenu.classList.contains('active') ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
+                if (navMenu.classList.contains('active')) {
+                    menuToggle.innerHTML = '<i class="fas fa-times"></i>';
+                } else {
+                    menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+                }
             }
+            
             menuToggle.addEventListener('click', toggleMenu);
             menuOverlay.addEventListener('click', toggleMenu);
+            
             navLinks.forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -1534,11 +1781,13 @@
             const dropdownBtn = document.getElementById('dropdownBtn');
             const dropdownContent = document.getElementById('dropdownContent');
             const filterLinks = dropdownContent.querySelectorAll('a');
+            
             dropdownBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 dropdownContent.classList.toggle('show');
                 dropdownBtn.classList.toggle('active');
             });
+            
             filterLinks.forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -1552,6 +1801,7 @@
                     dropdownBtn.classList.remove('active');
                 });
             });
+            
             document.addEventListener('click', function(e) {
                 if (!e.target.closest('.filter-dropdown')) {
                     dropdownContent.classList.remove('show');
@@ -1565,20 +1815,24 @@
             const nextBtn = document.getElementById('nextBtn');
             const pageInfo = document.getElementById('pageInfo');
             allProjects = Array.from(document.querySelectorAll('.project-card'));
+            
             prevBtn.addEventListener('click', () => {
                 if (currentPage > 1) {
                     currentPage--;
                     updateProjectsDisplay();
                 }
             });
+            
             nextBtn.addEventListener('click', () => {
                 const filteredProjects = getFilteredProjects();
+                const projectsPerPage = getProjectsPerPage();
                 const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
                 if (currentPage < totalPages) {
                     currentPage++;
                     updateProjectsDisplay();
                 }
             });
+            
             updateProjectsDisplay();
         }
 
@@ -1593,18 +1847,60 @@
 
         function updateProjectsDisplay() {
             const filteredProjects = getFilteredProjects();
+            const projectsPerPage = getProjectsPerPage();
             const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
             const startIndex = (currentPage - 1) * projectsPerPage;
             const endIndex = startIndex + projectsPerPage;
             const projectsToShow = filteredProjects.slice(startIndex, endIndex);
+            
             allProjects.forEach(card => card.style.display = 'none');
             projectsToShow.forEach(card => card.style.display = 'flex');
+            
             document.getElementById('prevBtn').disabled = currentPage === 1;
             document.getElementById('nextBtn').disabled = currentPage === totalPages;
+            
             const pageInfo = document.getElementById('pageInfo');
             pageInfo.textContent = filteredProjects.length === 0 ? 'No projects found' : `Page ${currentPage} of ${totalPages}`;
+            
             document.getElementById('prevBtn').style.display = filteredProjects.length === 0 ? 'none' : 'flex';
             document.getElementById('nextBtn').style.display = filteredProjects.length === 0 ? 'none' : 'flex';
+            
+            adjustProjectGrid();
+        }
+
+        function adjustProjectGrid() {
+            const projectGrid = document.getElementById('projectGrid');
+            const displayedProjects = Array.from(projectGrid.querySelectorAll('.project-card[style*="display: flex"]'));
+            
+            if (displayedProjects.length === 0) return;
+            
+            let columns;
+            if (window.innerWidth >= 1200) {
+                columns = 3;
+            } else if (window.innerWidth >= 768) {
+                columns = 2;
+            } else {
+                columns = 1;
+            }
+            
+            displayedProjects.forEach(project => {
+                project.style.gridColumn = 'auto';
+                project.style.gridRow = 'auto';
+            });
+            
+            const totalProjects = displayedProjects.length;
+            const lastRowCount = totalProjects % columns;
+            
+            if (lastRowCount === 1 && columns === 3) {
+                const lastProject = displayedProjects[totalProjects - 1];
+                lastProject.style.gridColumn = 'span 3';
+            } else if (lastRowCount === 1 && columns === 2) {
+                const lastProject = displayedProjects[totalProjects - 1];
+                lastProject.style.gridColumn = 'span 2';
+            } else if (lastRowCount === 2 && columns === 3) {
+                const lastProject = displayedProjects[totalProjects - 1];
+                lastProject.style.gridColumn = 'span 2';
+            }
         }
 
         function filterProjects(filter) {
@@ -1722,6 +2018,11 @@
                 if (!customStatusChanged || spotifyChanged || hasOtherActivityChanges(userData.activities)) {
                     updateActivities(userData.activities);
                 }
+                
+                if (!isDataLoaded) {
+                    isDataLoaded = true;
+                    setTimeout(hideLoadingScreen, 1000);
+                }
             }
         }
 
@@ -1771,15 +2072,17 @@
             return spotifyChanged;
         }
 
-        function updateProfile(userData) {
+        async function updateProfile(userData) {
             const discordUser = userData.discord_user;
             const avatarElement = document.getElementById('avatar');
             const avatarGifElement = document.getElementById('avatarGif');
             const avatarDecorationElement = document.getElementById('avatarDecoration');
             const coderAvatarElement = document.getElementById('coder-avatar');
             const navAvatarElement = document.getElementById('nav-avatar');
+            
             avatarElement.style.display = 'none';
             avatarGifElement.style.display = 'none';
+            
             let avatarUrl;
             if (discordUser.avatar && discordUser.avatar.startsWith('a_')) {
                 avatarUrl = `${CdnBaseUrl}avatars/${discordUser.id}/${discordUser.avatar}.gif?size=256`;
@@ -1794,8 +2097,13 @@
                 avatarElement.src = avatarUrl;
                 avatarElement.style.display = 'block';
             }
+            
             coderAvatarElement.src = avatarUrl;
             navAvatarElement.src = avatarUrl;
+            
+            const color = await extractColorFromImage(avatarUrl);
+            updateTheme(color);
+            
             if (discordUser.avatar_decoration_data) {
                 avatarDecorationElement.style.display = 'block';
                 avatarDecorationElement.src = `${CdnBaseUrl}avatar-decoration-presets/${discordUser.avatar_decoration_data.asset}.png`;
@@ -1803,11 +2111,13 @@
                 avatarDecorationElement.style.display = 'none';
                 avatarDecorationElement.src = '';
             }
+            
             const displayName = discordUser.global_name || discordUser.username;
             document.getElementById('displayName').textContent = displayName;
             document.getElementById('coder-name').textContent = displayName;
             document.getElementById('nav-name').textContent = displayName;
             document.getElementById('username').textContent = `@${discordUser.username}`;
+            
             updateStatus(userData.discord_status);
             updateDeviceIcons(userData);
         }
@@ -1825,7 +2135,7 @@
             } else {
                 nameplateVideo.src = '';
                 nameplateVideo.style.display = 'none';
-                profileHeader.style.backgroundColor = '#232136';
+                profileHeader.style.backgroundColor = 'var(--secondary-color)';
                 profileHeader.style.backgroundImage = 'none';
             }
         }
@@ -1918,7 +2228,7 @@
             spotifyIcon.setAttribute('viewBox', '0 0 496 512');
             spotifyIcon.setAttribute('fill', 'currentColor');
             const spotifyPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            spotifyPath.setAttribute('d', "M248 8C111.1 8 0 119.1 0 256s111.1 248 248 248 248-111.1 248-248S384.9 8 248 8zm100.7 364.9c-4.2 0-6.8-1.3-10.7-3.6-62.4-37.6-135-39.2-206.7-24.5-3.9 1-9 2.6-11.9 2.6-9.7 0-15.8-7.7-15.8-15.8 0-10.3 6.1-15.2 13.6-16.8 81.9-18.1 165.6-16.5 237 26.2 6.1 3.9 9.7 7.4 9.7 16.5s-7.1 15.4-15.2 15.4zm26.9-65.6c-5.2 0-8.7-2.3-12.3-4.2-62.5-37-155.7-51.9-238.6-29.4-4.8 1.3-7.4 2.6-11.9 2.6-10.7 0-19.4-8.7-19.4-19.4s5.2-17.8 15.5-20.7c27.8-7.8 56.2-13.6 97.8-13.6 64.9 0 127.6 16.1 177 45.5 8.1 4.8 11.3 11 11.3 19.7-.1 10.8-8.5 19.5-19.4 19.5zm31-76.2c-5.2 0-8.4-1.3-12.9-3.9-71.2-42.5-198.5-52.7-280.9-29.7-3.6 1-8.1 2.6-12.9 2.6-13.2 0-23.3-10.3-23.3-23.6 0-13.6 8.4-21.3 17.4-23.9 35.2-10.3 74.6-15.2 117.5-15.2 73 0 149.5 15.2 205.4 47.8 7.8 4.5 12.9 10.7 12.9 22.6 0 13.6-11 23.3-23.2 23.3z");
+            spotifyPath.setAttribute('d', "M248 8C111.1 8 0 119.1 0 256s111.1 248 248 248 248-111.1 248-248S384.9 8 248 8zm100.7 364.9c-4.2 0-6.8-1.3-10.7-3.6-62.4-37.6-135-39.2-206.7-24.5-3.9 1-9 2.6-11.9 2.6-9.7 0-15.8-7.7-15.8-15.8 0-10.3 6.1-15.2 13.6-16.8 81.9-18.1 165.6-16.5 237 26.2 6.1 3.9 9.7 7.4 9.7 16.5s-7.1 15.4-15.2 15.4zm26.9-65.6c-5.2 0-8.7-2.3-12.3-4.2-62.5-37-155.7-51.9-238.6-29.4-4.8 1.3-7.4 2.6-11.9 2.6-10.7 0-19.4-8.7-19.4-19.4s5.2-17.8 15.5-20.7c27.8-7.8 56.2-13.6 97.8-13.6 64.9 0 127.6 16.1 177 45.5 8.1 4.5 11.3 11 11.3 19.7-.1 10.8-8.5 19.5-19.4 19.5zm31-76.2c-5.2 0-8.4-1.3-12.9-3.9-71.2-42.5-198.5-52.7-280.9-29.7-3.6 1-8.1 2.6-12.9 2.6-13.2 0-23.3-10.3-23.3-23.6 0-13.6 8.4-21.3 17.4-23.9 35.2-10.3 74.6-15.2 117.5-15.2 73 0 149.5 15.2 205.4 47.8 7.8 4.5 12.9 10.7 12.9 22.6 0 13.6-11 23.3-23.2 23.3z");
             spotifyIcon.appendChild(spotifyPath);
             spotifyButton.appendChild(spotifyIcon);
             spotifyButton.appendChild(document.createTextNode('Play on Spotify'));
@@ -2020,7 +2330,7 @@
                 activityCard.innerHTML = `
                     <div class="activity-header">
                         <svg class="activity-icon" viewBox="0 0 24 24" fill="#908caa">
-                            <path d="M5.79335761,5 L18.2066424,5 C19.7805584,5 21.0868816,6.21634264 21.1990185,7.78625885 L21.8575059,17.0050826 C21.9307825,18.0309548 21.1585512,18.9219909 20.132679,18.9952675 C20.088523,18.9984215 20.0442685,19 20,19 C18.8245863,19 17.8000084,18.2000338 17.5149287,17.059715 L17,15 L7,15 L6.48507125,17.059715 C6.19999155,18.2000338 5.1754137,19 4,19 C2.97151413,19 2.13776159,18.1662475 2.13776159,17.1377616 C2.13776159,17.0934931 2.1393401,17.0492386 2.1424941,17.0050826 L2.80098151,7.78625885 C2.91311838,6.21634264 4.21944161,5 5.79335761,5 Z M14.5,10 C15.3284271,10 16,9.32842712 16,8.5 C16,7.67157288 15.3284271,7 14.5,7 C13.6715729,7 13,7.67157288 13,8.5 C13,9.32842712 13.6715729,10 14.5,10 Z M18.5,13 C19.3284271,13 20,12.3284271 20,11.5 C20,10.6715729 19.3284271,10 18.5,10 C17.6715729,10 17,10.6715729 17,11.5 C17,12.3284271 17.6715729,13 18.5,13 Z M6,9 L4,9 L4,11 L6,11 L6,13 L8,13 L8,11 L10,11 L10,9 L8,9 L8,7 L6,7 L6,9 Z"/>
+                            <path d="M5.79335761,5 L18.2066424,5 C19.7805584,5 21.0868816,6.21634264 21.1990185,7.78625885 L21.8575059,17.0050826 C21.9307825,18.0309548 21.1585512,18.9219909 20.132679,18.9952675 C20.088523,18.9984215 20.0442685,19 20,19 C18.8245863,19 17.8000084,18.2000338 17.5149287,17.059715 L17,15 L7,15 L6.48507125,17.059715 C6.19999155,18.2000338 5.1754137,19 4,19 C2.97151413,19 2.13776159,18.1662475 2.13776159,17.1377616 C2.13776159,17.0934931 2.1393401,17.0492386 2.1424941,17.0050826 L2.80098151,7.78625885 C2.91311838,6.21634264 4.21944161,5 5.79335761,5 Z M14.5,10 C15.3284271,10 16,9.32842712 16,8.5 C16,7.67157288 15.3284271,7 14.5,7 C13.6715729,7 13,7.67157288 13,8.5 C13,9.32842712 13.6715729,10 14.5,10 Z M18.5,13 C19.3284271,13 20,12.3284271 20,11.5 C20,10.6715729 19.3284271,10 18.5,10 C17.6715729,10 17,10.6715729 17,11.5 C17,12.3284271 17.6715729,13 18.5,13 Z M6,9 L4,9 L4,11 L6,11 L6,13 L8,13 L8,11 L10,11 L10,9 L8,9 L8,7 L6,7 L6,9 ZM5.79335761,5 L18.2066424,5 C19.7805584,5 21.0868816,6.21634264 21.1990185,7.78625885 L21.8575059,17.0050826 C21.9307825,18.0309548 21.1585512,18.9219909 20.132679,18.9952675 C20.088523,18.9984215 20.0442685,19 20,19 C18.8245863,19 17.8000084,18.2000338 17.5149287,17.059715 L17,15 L7,15 L6.48507125,17.059715 C6.19999155,18.2000338 5.1754137,19 4,19 C2.97151413,19 2.13776159,18.1662475 2.13776159,17.1377616 C2.13776159,17.0934931 2.1393401,17.0492386 2.1424941,17.0050826 L2.80098151,7.78625885 C2.91311838,6.21634264 4.21944161,5 5.79335761,5 Z M14.5,10 C15.3284271,10 16,9.32842712 16,8.5 C16,7.67157288 15.3284271,7 14.5,7 C13.6715729,7 13,7.67157288 13,8.5 C13,9.32842712 13.6715729,10 14.5,10 Z M18.5,13 C19.3284271,13 20,12.3284271 20,11.5 C20,10.6715729 19.3284271,10 18.5,10 C17.6715729,10 17,10.6715729 17,11.5 C17,12.3284271 17.6715729,13 18.5,13 Z M6,9 L4,9 L4,11 L6,11 L6,13 L8,13 L8,11 L10,11 L10,9 L8,9 L8,7 L6,7 L6,9 Z"/>
                         </svg>
                         <div class="activity-title">${activityTitleText}</div>
                     </div>
@@ -2176,7 +2486,20 @@
             container.innerHTML = `<div class="error">${message}</div>`;
         }
 
+        window.addEventListener('resize', function() {
+            updateProjectsDisplay();
+            adjustProjectGrid();
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
+            showLoadingScreen();
+            
+            setTimeout(() => {
+                if (!isDataLoaded) {
+                    hideLoadingScreen();
+                }
+            }, 5000);
+            
             initializeNavigation();
             initializeDropdown();
             initializePagination();
