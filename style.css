@@ -472,6 +472,10 @@ body.loaded .projects {
 }
 
 .games-list li {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
 }
 
