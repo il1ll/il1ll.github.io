@@ -1,0 +1,91 @@
+[
+  {
+    "id": 1,
+    "title": "discord webhook",
+    "description": "A fast and easy online tool for sending messages via Discord Webhooks — no installation required.",
+    "tech": ["html", "css", "javascript"],
+    "source": "https://github.com/il1ll/discord-webhook/",
+    "live": "https://il1ll.github.io/discord-webhook/"
+  },
+  {
+    "id": 2,
+    "title": "discord webhook V2",
+    "description": "A modern, fast, and stylish web tool for sending messages through Discord Webhooks — no installation needed.",
+    "tech": ["html", "css", "javascript"],
+    "source": "https://github.com/il1ll/discord-webhook-V2/",
+    "live": "https://il1ll.github.io/discord-webhook-V2/"
+  },
+  {
+    "id": 3,
+    "title": "2 pics in 1",
+    "description": "A Linux/Termux tool that exploits a Discord glitch to send two different images in one file.",
+    "tech": ["bash"],
+    "source": "https://github.com/il1ll/2-pics-in-1/"
+  },
+  {
+    "id": 4,
+    "title": "Discord Bot Client Web",
+    "description": "A powerful and modern web client that lets you control your Discord bot directly from your browser — no installation required.",
+    "tech": ["html", "css", "javascript"],
+    "source": "https://github.com/il1ll/dbcw/",
+    "live": "https://il1ll.github.io/dbcw/"
+  },
+  {
+    "id": 5,
+    "title": "Discord Activity",
+    "description": "An open-source tool to embed your real-time Discord activity on your website.",
+    "tech": ["html", "css", "javascript"],
+    "source": "https://github.com/il1ll/discord-activity",
+    "live": "https://il1ll.github.io/discord-activity/"
+  },
+  {
+    "id": 6,
+    "title": "Discord Rich Presence",
+    "description": "A Discord selfbot to set your custom Rich Presence activity with images, details, and timestamps.",
+    "tech": ["javascript", "nodejs"],
+    "source": "https://github.com/il1ll/Rich-Presence"
+  },
+  {
+    "id": 7,
+    "title": "SyncMusic",
+    "description": "A command‑line music player that downloads songs, fetches synchronized LRC lyrics, processes timing for every word and character, and displays them dynamically during playback.",
+    "tech": ["python"],
+    "source": "https://github.com/il1ll/SyncMusic"
+  },
+  {
+    "id": 8,
+    "title": "chat app no backend",
+    "description": "A fully functional, lightweight real-time chat system built with PHP, JSON files, and a clean HTML/CSS/JS interface.",
+    "tech": ["php", "json", "html", "css", "javascript"],
+    "source": "https://github.com/il1ll/chat-app-no-backend"
+  },
+  {
+    "id": 9,
+    "title": "Discord Quest Fucker",
+    "description": "Discord Quest Fucker is a Node.js CLI tool that automates Discord Quests completion.",
+    "tech": ["javascript", "nodejs"],
+    "source": "https://github.com/il1ll/discord-quest-fucker"
+  },
+  {
+    "id": 10,
+    "title": "RevengePlugins",
+    "description": "My own plugins for Revenge mod",
+    "tech": ["javascript", "typescript"],
+    "source": "https://github.com/il1ll/RevengePlugins",
+    "live": "https://il1ll.github.io/RevengePlugins/"
+  },
+  {
+    "id": 11,
+    "title": "GDDriveWeb",
+    "description": "Cloud Storage Implemented in Geometry Dash",
+    "tech": ["html", "css", "javascript", "python"],
+    "source": "https://github.com/il1ll/GDDriveWeb"
+  },
+  {
+    "id": 12,
+    "title": "IGStickerUploader",
+    "description": "Upload custom stickers to Instagram without removing the BG",
+    "tech": ["html", "css", "javascript", "python"],
+    "source": "https://github.com/il1ll/IGStickerUploader"
+  }
+]
