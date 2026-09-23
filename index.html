@@ -14,7 +14,7 @@
     <link rel="icon" type="image/png" href="Photos/Logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
     <link rel="stylesheet" href="style.css">
 </head>
@@ -26,7 +26,9 @@
 
     <nav class="navbar">
         <div class="nav-left">
-            <img id="nav-avatar" class="nav-avatar" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Profile Picture">
+            <span class="nav-avatar-wrap" id="navAvatarWrap" role="button" tabindex="0" title="Theme editor">
+                <img id="nav-avatar" class="nav-avatar" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Profile Picture">
+            </span>
             <div id="nav-name" class="nav-name">Loading...</div>
         </div>
         <div class="nav-right">
@@ -36,7 +38,7 @@
             <div class="nav-menu" id="navMenu">
                 <ul class="nav-links">
                     <li><a href="#home" class="nav-link" data-section="home">Home</a></li>
-                    <li><a href="#languages" class="nav-link" data-section="languages">Languages</a></li>
+                    <li><a href="#discord-status" class="nav-link" data-section="discord-status">Discord</a></li>
                     <li><a href="#games" class="nav-link" data-section="games">Games</a></li>
                     <li><a href="#tech-stack" class="nav-link" data-section="tech-stack">Skills</a></li>
                     <li><a href="#projects" class="nav-link" data-section="projects">My Projects</a></li>
@@ -45,6 +47,187 @@
         </div>
     </nav>
     <div class="nav-menu-overlay" id="menuOverlay"></div>
+
+    <div class="theme-editor" id="themeEditor">
+        <div class="theme-editor-head">
+            <span class="material-symbols-outlined theme-editor-icon">palette</span>
+            <span class="theme-editor-title">Theme Editor</span>
+            <button class="theme-editor-close" id="themeClose">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="theme-editor-body">
+            <div class="theme-view active" data-view="main">
+                <div class="theme-row-switch">
+                    <div class="theme-row-info">
+                        <span class="material-symbols-outlined">auto_awesome</span>
+                        <div>
+                            <div class="theme-label">Always use avatar theme</div>
+                            <div class="theme-hint">Use the colors extracted from the avatar</div>
+                        </div>
+                    </div>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="avatarThemeToggle" checked>
+                        <span class="theme-switch-track"><span class="theme-switch-thumb"></span></span>
+                    </label>
+                </div>
+
+                <div class="theme-collapse hidden" id="themeCollapse">
+                    <div class="theme-collapse-inner">
+                        <div class="theme-section" id="primarySection">
+                            <div class="theme-section-title">Primary color</div>
+                            <div class="theme-color-head">
+                                <input type="color" class="theme-swatch" id="primaryPicker" value="#8fb1ef">
+                                <span class="theme-hex" id="primaryHex">#8FB1EF</span>
+                            </div>
+                            <div class="theme-slider-row">
+                                <span class="theme-slider-key">R</span>
+                                <input type="range" id="primaryR" min="0" max="255" step="1" value="143">
+                                <span class="theme-slider-val" id="primaryRVal">143</span>
+                            </div>
+                            <div class="theme-slider-row">
+                                <span class="theme-slider-key">G</span>
+                                <input type="range" id="primaryG" min="0" max="255" step="1" value="177">
+                                <span class="theme-slider-val" id="primaryGVal">177</span>
+                            </div>
+                            <div class="theme-slider-row">
+                                <span class="theme-slider-key">B</span>
+                                <input type="range" id="primaryB" min="0" max="255" step="1" value="239">
+                                <span class="theme-slider-val" id="primaryBVal">239</span>
+                            </div>
+                        </div>
+
+                        <div class="theme-section" id="secondarySection">
+                            <div class="theme-section-title">Secondary color</div>
+                            <div class="theme-color-head">
+                                <input type="color" class="theme-swatch" id="secondaryPicker" value="#385b94">
+                                <span class="theme-hex" id="secondaryHex">#385B94</span>
+                            </div>
+                            <div class="theme-slider-row">
+                                <span class="theme-slider-key">R</span>
+                                <input type="range" id="secondaryR" min="0" max="255" step="1" value="56">
+                                <span class="theme-slider-val" id="secondaryRVal">56</span>
+                            </div>
+                            <div class="theme-slider-row">
+                                <span class="theme-slider-key">G</span>
+                                <input type="range" id="secondaryG" min="0" max="255" step="1" value="91">
+                                <span class="theme-slider-val" id="secondaryGVal">91</span>
+                            </div>
+                            <div class="theme-slider-row">
+                                <span class="theme-slider-key">B</span>
+                                <input type="range" id="secondaryB" min="0" max="255" step="1" value="148">
+                                <span class="theme-slider-val" id="secondaryBVal">148</span>
+                            </div>
+                        </div>
+
+                        <div class="theme-section" id="adjustSection">
+                            <div class="theme-section-title">Adjust</div>
+                            <div class="theme-slider-row">
+                                <span class="theme-slider-name">Surface saturation</span>
+                                <input type="range" id="surfaceSat" min="0" max="20" step="1" value="4">
+                                <span class="theme-slider-val" id="surfaceSatVal">4</span>
+                            </div>
+                            <div class="theme-slider-row">
+                                <span class="theme-slider-name">Surface lightness</span>
+                                <input type="range" id="surfaceLight" min="0" max="14" step="1" value="6">
+                                <span class="theme-slider-val" id="surfaceLightVal">6</span>
+                            </div>
+                            <div class="theme-slider-row">
+                                <span class="theme-slider-name">Surface step</span>
+                                <input type="range" id="surfaceStepIn" min="2" max="6" step="1" value="4">
+                                <span class="theme-slider-val" id="surfaceStepInVal">4</span>
+                            </div>
+                            <div class="theme-slider-row">
+                                <span class="theme-slider-name">Text lightness</span>
+                                <input type="range" id="textLight" min="85" max="98" step="1" value="92">
+                                <span class="theme-slider-val" id="textLightVal">92</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="theme-actions">
+                    <button class="theme-btn" id="exportBtn">
+                        <span class="material-symbols-outlined">download</span>
+                        <span class="theme-btn-label">Export</span>
+                    </button>
+                    <button class="theme-btn" id="importBtn">
+                        <span class="material-symbols-outlined">upload</span>
+                        <span class="theme-btn-label">Import</span>
+                    </button>
+                    <button class="theme-btn" id="resetBtn">
+                        <span class="material-symbols-outlined">restart_alt</span>
+                        <span class="theme-btn-label">Reset</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="theme-view" data-view="export-choice">
+                <button class="theme-back" data-back>
+                    <span class="material-symbols-outlined">arrow_back</span> Back
+                </button>
+                <div class="theme-view-title">Export theme</div>
+                <div class="theme-choice">
+                    <button class="theme-choice-btn" id="exportFileBtn">
+                        <span class="material-symbols-outlined">description</span>
+                        <span>File</span>
+                        <span class="theme-choice-hint">Download theme.json</span>
+                    </button>
+                    <button class="theme-choice-btn" id="exportTextBtn">
+                        <span class="material-symbols-outlined">code</span>
+                        <span>Text</span>
+                        <span class="theme-choice-hint">View the JSON</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="theme-view" data-view="export-text">
+                <button class="theme-back" data-back>
+                    <span class="material-symbols-outlined">arrow_back</span> Back
+                </button>
+                <div class="theme-view-title">Theme JSON</div>
+                <pre class="theme-code" id="themeCode"></pre>
+                <button class="theme-btn theme-btn-wide" id="copyThemeBtn">
+                    <span class="material-symbols-outlined">content_copy</span>
+                    <span class="theme-btn-label">Copy</span>
+                </button>
+            </div>
+
+            <div class="theme-view" data-view="import-choice">
+                <button class="theme-back" data-back>
+                    <span class="material-symbols-outlined">arrow_back</span> Back
+                </button>
+                <div class="theme-view-title">Import theme</div>
+                <div class="theme-choice">
+                    <button class="theme-choice-btn" id="importFileBtn">
+                        <span class="material-symbols-outlined">description</span>
+                        <span>File</span>
+                        <span class="theme-choice-hint">Pick a .json file</span>
+                    </button>
+                    <button class="theme-choice-btn" id="importTextBtn">
+                        <span class="material-symbols-outlined">code</span>
+                        <span>Text</span>
+                        <span class="theme-choice-hint">Paste the JSON</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="theme-view" data-view="import-text">
+                <button class="theme-back" data-back>
+                    <span class="material-symbols-outlined">arrow_back</span> Back
+                </button>
+                <div class="theme-view-title">Paste theme JSON</div>
+                <textarea class="theme-textarea" id="importArea" spellcheck="false" placeholder='{"alwaysUseAvatarTheme": false, ...}'></textarea>
+                <button class="theme-btn theme-btn-wide" id="applyImportBtn">
+                    <span class="material-symbols-outlined">check</span>
+                    <span class="theme-btn-label">Apply</span>
+                </button>
+            </div>
+
+            <div class="theme-error" id="themeError"></div>
+        </div>
+    </div>
+    <input type="file" id="themeFileInput" accept=".json,application/json" hidden>
 
     <header class="coder" id="home">
         <img id="coder-avatar" class="coder-avatar" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Profile Picture">
@@ -78,71 +261,65 @@
         </div>
     </header>
 
-    <div class="container">
-        <div id="spotifyCard" class="spotify-card">
-            <div class="spotify-header">
-                <svg class="spotify-logo" viewBox="0 0 496 512" fill="#1DB954">
-                    <path d="M248 8C111.1 8 0 119.1 0 256s111.1 248 248 248 248-111.1 248-248S384.9 8 248 8zm100.7 364.9c-4.2 0-6.8-1.3 -10.7-3.6-62.4-37.6-135-39.2-206.7-24.5-3.9 1-9 2.6-11.9 2.6-9.7 0-15.8-7.7-15.8-15.8 0-10.3 6.1-15.2 13.6-16.8 81.9-18.1 165.6-16.5 237 26.2 6.1 3.9 9.7 7.4 9.7 16.5s-7.1 15.4-15.2 15.4zm26.9-65.6c-5.2 0-8.7-2.3-12.3-4.2-62.5-37-155.7-51.9-238.6-29.4-4.8 1.3-7.4 2.6-11.9 2.6-10.7 0-19.4-8.7-19.4-19.4s5.2-17.8 15.5-20.7c27.8-7.8 56.2-13.6 97.8-13.6 64.9 0 127.6 16.1 177 45.5 8.1 4.5 11.3 11 11.3 19.7-.1 10.8-8.5 19.5-19.4 19.5zm31-76.2c-5.2 0-8.4-1.3-12.9-3.9-71.2-42.5-198.5-52.7-280.9-29.7-3.6 1-8.1 2.6-12.9 2.6-13.2 0-23.3-10.3-23.3-23.6 0-13.6 8.4-21.3 17.4-23.9 35.2-10.3 74.6-15.2 117.5-15.2 73 0 149.5 15.2 205.4 47.8 7.8 4.5 12.9 10.7 12.9 22.6 0 13.6-11 23.3-23.2 23.3z" />
-                </svg>
-                <div class="spotify-title">Listening to Spotify</div>
-            </div>
-            <div class="spotify-content">
-                <img id="albumArt" class="album-art" src="" alt="Album Art">
-                <div class="track-info">
-                    <div class="track-name" id="trackName"></div>
-                    <div class="track-artist" id="trackArtist"></div>
-                    <div class="progress-container">
-                        <div class="progress-bar" id="progressBar"></div>
-                    </div>
-                    <div class="time-info">
-                        <span id="currentTime">0:00</span>
-                        <span id="totalTime">0:00</span>
-                    </div>
-                </div>
-            </div>
-            <div class="activity-buttons" id="spotifyButtons"></div>
+    <div class="container" id="discord-status">
+        <div class="status-column">
+            <div id="activitiesContainer" class="activities-container"></div>
         </div>
-        <div id="activitiesContainer" class="activities-container"></div>
-        <div class="profile-section">
-            <img id="profileBanner" class="profile-banner" src="" alt="Profile Banner">
-            <img id="profileBannerGif" class="profile-banner-gif" src="" alt="Profile Banner GIF">
-            <div id="colorBanner" class="color-banner"></div>
-            <div class="profile-card" id="profileCard">
-                <div class="profile-header" id="profileHeader">
-                    <video id="nameplateVideo" class="nameplate-video" autoplay loop muted playsinline style="display: none;"></video>
-                    <div class="avatar-container">
-                        <img id="avatar" class="avatar" src="" alt="Avatar" style="display: none;">
-                        <img id="avatarGif" class="avatar-gif" src="" alt="Avatar GIF" style="display: none;">
-                        <div id="statusIndicator" class="status-indicator"></div>
-                        <img id="avatarDecoration" class="avatar-decoration" src="" alt="Decoration" style="display: none;">
-                    </div>
-                    <div class="user-info">
-                        <div class="name-container">
-                            <div class="display-name" id="displayName"></div>
-                            <div id="tagInfo"></div>
-                            <div class="device-icons" id="deviceIcons"></div>
-                            <div class="badges-container" id="badgesContainer"></div>
+        <div class="profile-column">
+            <div class="profile-section">
+                <img id="profileBanner" class="profile-banner" src="" alt="Profile Banner">
+                <img id="profileBannerGif" class="profile-banner-gif" src="" alt="Profile Banner GIF">
+                <div id="colorBanner" class="color-banner"></div>
+                <div class="profile-card" id="profileCard">
+                    <div class="profile-header" id="profileHeader">
+                        <video id="nameplateVideo" class="nameplate-video" autoplay loop muted playsinline style="display: none;"></video>
+                        <div class="avatar-container">
+                            <img id="avatar" class="avatar" src="" alt="Avatar" style="display: none;">
+                            <img id="avatarGif" class="avatar-gif" src="" alt="Avatar GIF" style="display: none;">
+                            <div id="statusIndicator" class="status-indicator"></div>
+                            <img id="avatarDecoration" class="avatar-decoration" src="" alt="Decoration" style="display: none;">
                         </div>
-                        <div class="username-row">
-                            <div class="username" id="username"></div>
-                            <div class="status-separator" id="statusSeparator" style="display: none;">•</div>
-                            <div class="custom-status" id="customStatus"></div>
+                        <div class="user-info">
+                            <div class="name-container">
+                                <div class="display-name" id="displayName"></div>
+                                <div id="tagInfo"></div>
+                                <div class="device-icons" id="deviceIcons"></div>
+                                <div class="badges-container" id="badgesContainer"></div>
+                            </div>
+                            <div class="username-row">
+                                <div class="username" id="username"></div>
+                                <div class="status-separator" id="statusSeparator" style="display: none;">•</div>
+                                <div class="custom-status" id="customStatus"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
+            <div id="spotifyCard" class="spotify-card">
+                <div class="spotify-header">
+                    <svg class="spotify-logo" viewBox="0 0 496 512" fill="#1DB954">
+                        <path d="M248 8C111.1 8 0 119.1 0 256s111.1 248 248 248 248-111.1 248-248S384.9 8 248 8zm100.7 364.9c-4.2 0-6.8-1.3 -10.7-3.6-62.4-37.6-135-39.2-206.7-24.5-3.9 1-9 2.6-11.9 2.6-9.7 0-15.8-7.7-15.8-15.8 0-10.3 6.1-15.2 13.6-16.8 81.9-18.1 165.6-16.5 237 26.2 6.1 3.9 9.7 7.4 9.7 16.5s-7.1 15.4-15.2 15.4zm26.9-65.6c-5.2 0-8.7-2.3-12.3-4.2-62.5-37-155.7-51.9-238.6-29.4-4.8 1.3-7.4 2.6-11.9 2.6-10.7 0-19.4-8.7-19.4-19.4s5.2-17.8 15.5-20.7c27.8-7.8 56.2-13.6 97.8-13.6 64.9 0 127.6 16.1 177 45.5 8.1 4.5 11.3 11 11.3 19.7-.1 10.8-8.5 19.5-19.4 19.5zm31-76.2c-5.2 0-8.4-1.3-12.9-3.9-71.2-42.5-198.5-52.7-280.9-29.7-3.6 1-8.1 2.6-12.9 2.6-13.2 0-23.3-10.3-23.3-23.6 0-13.6 8.4-21.3 17.4-23.9 35.2-10.3 74.6-15.2 117.5-15.2 73 0 149.5 15.2 205.4 47.8 7.8 4.5 12.9 10.7 12.9 22.6 0 13.6-11 23.3-23.2 23.3z" />
+                    </svg>
+                    <div class="spotify-title">Listening to Spotify</div>
+                </div>
+                <div class="spotify-content">
+                    <img id="albumArt" class="album-art" src="" alt="Album Art">
+                    <div class="track-info">
+                        <div class="track-name" id="trackName"></div>
+                        <div class="track-artist" id="trackArtist"></div>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="progressBar"></div>
+                        </div>
+                        <div class="time-info">
+                            <span id="currentTime">0:00</span>
+                            <span id="totalTime">0:00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="activity-buttons" id="spotifyButtons"></div>
             </div>
         </div>
     </div>
-
-    <section class="section-container spoken-languages" id="languages">
-        <h2>Languages</h2>
-        <ul class="language-list">
-            <li><span>🇾🇪</span>Arabic</li>
-            <li><span>🇺🇸</span>English</li>
-            <li><span>🇷🇺</span>Russian</li>
-            <li><span>🇯🇵</span>Japanese</li>
-        </ul>
-    </section>
 
     <section class="section-container games-section" id="games">
         <h2>Games</h2>

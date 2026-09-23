@@ -21,6 +21,25 @@ let lastCustomStatus = null;
 let lastActivities = [];
 let lastSpotifyData = null;
 let isDataLoaded = false;
+const DEFAULT_THEME_SETTINGS = {
+    version: 1,
+    alwaysUseAvatarTheme: true,
+    primary: { r: 143, g: 177, b: 239 },
+    secondary: { r: 56, g: 91, b: 148 },
+    surfaceSaturation: 4,
+    surfaceLightness: 6,
+    surfaceStep: 4,
+    textLightness: 92,
+    customized: false
+};
+const THEME_RANGES = {
+    surfaceSaturation: [0, 20],
+    surfaceLightness: [0, 14],
+    surfaceStep: [2, 6],
+    textLightness: [85, 98]
+};
+let themeSettings = loadThemeSettings();
+let lastAvatarColors = null;
 
 window.addEventListener('load', function() {
     window.scrollTo(0, 0);
@@ -194,37 +213,41 @@ function extractColorsFromImage(imageUrl) {
     });
 }
 
-function updateTheme(primaryColor, secondaryColor) {
+function updateTheme(primaryColor, secondaryColor, settings) {
+    const config = settings || DEFAULT_THEME_SETTINGS;
     const root = document.documentElement;
-    let h1 = primaryColor.h;
-    let s1 = primaryColor.s;
-    let h2 = secondaryColor.h;
-    let s2 = secondaryColor.s;
+    const primaryHsl = rgbToHsl(primaryColor.r, primaryColor.g, primaryColor.b);
+    const secondaryHsl = rgbToHsl(secondaryColor.r, secondaryColor.g, secondaryColor.b);
+    const h1 = primaryHsl.h;
+    const s1 = primaryHsl.s;
+    const l1 = primaryHsl.l;
+    const h2 = secondaryHsl.h;
+    const s2 = secondaryHsl.s;
+    const l2 = secondaryHsl.l;
     
-    const sNV = 4;
-    const surfaceL = 6;
-    const surface1L = 10;
-    const surface2L = 14;
-    const surface3L = 18;
-    const surface4L = 22;
+    const sNV = config.surfaceSaturation;
+    const surfaceL = config.surfaceLightness;
+    const step = config.surfaceStep;
 
     const surface = hslToHex(h1, sNV, surfaceL);
-    const surface1 = hslToHex(h1, sNV, surface1L);
-    const surface2 = hslToHex(h1, sNV, surface2L);
-    const surface3 = hslToHex(h1, sNV, surface3L);
-    const surface4 = hslToHex(h1, sNV, surface4L);
+    const surface1 = hslToHex(h1, sNV, surfaceL + step);
+    const surface2 = hslToHex(h1, sNV, surfaceL + step * 2);
+    const surface3 = hslToHex(h1, sNV, surfaceL + step * 3);
+    const surface4 = hslToHex(h1, sNV, surfaceL + step * 4);
 
-    const primary = hslToHex(h1, s1, 75);
-    const onPrimary = hslToHex(h1, s1, 12);
-    const primaryContainer = hslToHex(h2, Math.min(s2, 30), 20);
-    const onPrimaryContainer = hslToHex(h2, Math.min(s2, 30), 88);
+    const containerSat = Math.min(s2, 30);
+    const primary = rgbToHex(primaryColor.r, primaryColor.g, primaryColor.b);
+    const onPrimary = hslToHex(h1, s1, l1 > 50 ? 12 : 90);
+    const primaryContainer = hslToHex(h2, containerSat, clamp(l2 * 0.5, 12, 30));
+    const onPrimaryContainer = hslToHex(h2, containerSat, clamp(100 - l2 * 0.3, 72, 96));
 
-    const outlineVariant = hslToHex(h2, sNV, 22);
-    const onSurface = hslToHex(h1, sNV, 92);
-    const onSurfaceVar = hslToHex(h1, sNV, 68);
+    const outlineVariant = hslToHex(h2, sNV, Math.round(clamp(l2 * 0.55, 12, 32)));
+    const onSurface = hslToHex(h1, sNV, config.textLightness);
+    const onSurfaceVar = hslToHex(h1, sNV, Math.max(config.textLightness - 24, 10));
 
-    const rippleColor = `hsla(${h2},${Math.min(s2, 30)}%,75%,0.15)`;
-    const socialShadow = `hsla(${h2},${Math.min(s2, 30)}%,65%,0.25)`;
+    const rippleColor = `hsla(${h2},${containerSat}%,${Math.round(clamp(l2 + 35, 45, 88))}%,0.15)`;
+    const socialShadow = `hsla(${h2},${containerSat}%,${Math.round(clamp(l2 + 25, 35, 78))}%,0.25)`;
+    const avatarRing = `rgba(${Math.round(clamp(primaryColor.r, 0, 255))},${Math.round(clamp(primaryColor.g, 0, 255))},${Math.round(clamp(primaryColor.b, 0, 255))},0.15)`;
 
     const props = {
         '--md-surface': surface, '--md-surface-1': surface1,
@@ -238,6 +261,7 @@ function updateTheme(primaryColor, secondaryColor) {
         '--md-outline-variant': outlineVariant,
         '--md-ripple': rippleColor,
         '--social-shadow': socialShadow,
+        '--avatar-ring': avatarRing,
         '--primary-color': primary, '--secondary-color': surface,
         '--text-color': onSurface,
         '--muted-text': onSurfaceVar, '--border-color': outlineVariant,
@@ -269,6 +293,9 @@ function initializeNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
 
     function toggleMenu() {
+        navMenu.style.setProperty('--menu-x', `${menuToggle.offsetLeft + menuToggle.offsetWidth / 2 - navMenu.offsetLeft}px`);
+        navMenu.style.setProperty('--menu-y', `${menuToggle.offsetTop + menuToggle.offsetHeight / 2 - navMenu.offsetTop}px`);
+        navMenu.offsetHeight;
         navMenu.classList.toggle('active');
         if (navMenu.classList.contains('active')) {
             menuToggle.innerHTML = '<span class="material-symbols-outlined">close</span>';
@@ -527,6 +554,7 @@ async function fetchDcdnData() {
         if (data.user) {
             updateBanner(data.user);
             updateBadges(data.badges);
+            updateNameGradient(data.user);
         }
     } catch (error) {
         console.error('Failed to fetch DCDN data:', error);
@@ -572,6 +600,37 @@ function updateBadges(badges) {
             }
         });
     }
+}
+
+function updateNameGradient(userData) {
+    const styles = userData.display_name_styles;
+    const nameElements = ['coder-name', 'displayName', 'nav-name']
+        .map((id) => document.getElementById(id))
+        .filter(Boolean);
+    const rawColors = Array.isArray(styles && styles.colors)
+        ? styles.colors.filter((value) => Number.isFinite(value) && value >= 0 && value <= 16777215)
+        : [];
+    if (rawColors.length < 2) {
+        nameElements.forEach((element) => element.classList.remove('name-gradient'));
+        return;
+    }
+    const hexColors = rawColors.map((value) => `#${Math.round(value).toString(16).padStart(6, '0')}`);
+    let stops;
+    if (hexColors.length <= 3) {
+        stops = hexColors.map((hex, index) => `${hex} ${((index / (hexColors.length - 1)) * 100).toFixed(2)}%`);
+    } else {
+        const step = 100 / hexColors.length;
+        const blend = Math.min(14, step * 0.7);
+        stops = [`${hexColors[0]} 0%`];
+        for (let index = 0; index < hexColors.length - 1; index += 1) {
+            const boundary = (index + 1) * step;
+            stops.push(`${hexColors[index]} ${(boundary - blend / 2).toFixed(2)}%`);
+            stops.push(`${hexColors[index + 1]} ${(boundary + blend / 2).toFixed(2)}%`);
+        }
+        stops.push(`${hexColors[hexColors.length - 1]} 100%`);
+    }
+    document.documentElement.style.setProperty('--name-gradient', `linear-gradient(90deg, ${stops.join(', ')})`);
+    nameElements.forEach((element) => element.classList.add('name-gradient'));
 }
 
 function connectWebSocket() {
@@ -676,6 +735,7 @@ function updateSpotifyIfChanged(userData) {
         } else {
             const spotifyCard = document.getElementById('spotifyCard');
             spotifyCard.classList.remove('spotify-active');
+            updateContainerLayout();
             if (progressInterval) clearInterval(progressInterval);
         }
     }
@@ -713,7 +773,9 @@ async function updateProfile(userData) {
     navAvatarElement.src = avatarUrl;
 
     const colors = await extractColorsFromImage(avatarUrl);
-    updateTheme(colors.primary, colors.secondary);
+    lastAvatarColors = colors;
+    syncTrackedThemeColors();
+    applyTheme();
 
     if (discordUser.avatar_decoration_data) {
         avatarDecorationElement.style.display = 'block';
@@ -835,6 +897,7 @@ function updateDeviceIcons(userData) {
 function updateSpotify(spotifyData) {
     const spotifyCard = document.getElementById('spotifyCard');
     spotifyCard.classList.add('spotify-active');
+    updateContainerLayout();
     document.getElementById('albumArt').src = spotifyData.album_art_url;
     document.getElementById('trackName').textContent = spotifyData.song;
     document.getElementById('trackArtist').textContent = `by ${spotifyData.artist}`;
@@ -939,6 +1002,32 @@ function updateCustomStatus(activities) {
     }
 
     return true;
+}
+
+function updateContainerLayout() {
+    const container = document.querySelector('.container');
+    const spotifyCard = document.getElementById('spotifyCard');
+    const activitiesContainer = document.getElementById('activitiesContainer');
+    if (!container || !spotifyCard || !activitiesContainer) return;
+    const bodyStyle = window.getComputedStyle(document.body);
+    const available = document.body.clientWidth - parseFloat(bodyStyle.paddingLeft) - parseFloat(bodyStyle.paddingRight);
+    const columnWidth = 400;
+    const columnGap = 10;
+    const hasActivities = activitiesContainer.children.length > 0;
+    const hasSpotify = spotifyCard.classList.contains('spotify-active');
+    const profileColumn = container.querySelector('.profile-column');
+    const statusColumn = container.querySelector('.status-column');
+    if (profileColumn && statusColumn) {
+        const target = hasActivities ? profileColumn : statusColumn;
+        if (spotifyCard.parentElement !== target) {
+            target.appendChild(spotifyCard);
+        }
+    }
+    const maxColumns = Math.max(1, Math.floor((available + columnGap) / (columnWidth + columnGap)));
+    const columns = (hasActivities || hasSpotify) && maxColumns >= 2 ? 2 : 1;
+    const rows = columns === 2 ? 1 : 2;
+    container.style.setProperty('--smart-columns', String(columns));
+    container.style.setProperty('--smart-rows', String(rows));
 }
 
 function updateActivities(activities) {
@@ -1121,6 +1210,7 @@ function updateActivities(activities) {
         }
         activitiesContainer.appendChild(activityCard);
     });
+    updateContainerLayout();
 }
 
 function showError(message) {
@@ -1131,6 +1221,7 @@ function showError(message) {
 window.addEventListener('resize', function () {
     updateProjectsDisplay();
     adjustProjectGrid();
+    updateContainerLayout();
 });
 
 function initializeRipples() {
@@ -1153,7 +1244,7 @@ function initializeRipples() {
         button.appendChild(circle);
     }
 
-    const elements = document.querySelectorAll('.nav-link, .menu-toggle, .dropdown-btn, .dropdown-content a, .btn-source, .btn-live, .pagination-btn, .social-app, .activity-button');
+    const elements = document.querySelectorAll('.nav-link, .menu-toggle, .dropdown-btn, .dropdown-content a, .btn-source, .btn-live, .pagination-btn, .social-app, .activity-button, .theme-btn, .theme-choice-btn');
     elements.forEach(btn => {
         btn.classList.add('ripple-surface');
         btn.addEventListener('mousedown', createRipple);
@@ -1169,10 +1260,451 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }, 5000);
 
+    initializeThemeEditor();
     initializeNavigation();
     initializeDropdowns();
     initializePagination();
     initializeRipples();
+    updateContainerLayout();
     connectWebSocket();
 });
+
+function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+}
+
+function normalizeRgbColor(color) {
+    if (!color || typeof color !== 'object') return null;
+    if (Number.isFinite(Number(color.r)) && Number.isFinite(Number(color.g)) && Number.isFinite(Number(color.b))) {
+        return {
+            r: Math.round(clamp(Number(color.r), 0, 255)),
+            g: Math.round(clamp(Number(color.g), 0, 255)),
+            b: Math.round(clamp(Number(color.b), 0, 255))
+        };
+    }
+    if (Number.isFinite(Number(color.h)) && Number.isFinite(Number(color.s)) && Number.isFinite(Number(color.l))) {
+        const hex = hslToHex(clamp(Number(color.h), 0, 360), clamp(Number(color.s), 0, 100), clamp(Number(color.l), 0, 100));
+        return hexToRgb(hex);
+    }
+    return null;
+}
+
+function normalizeThemeSettings(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    const primary = normalizeRgbColor(raw.primary);
+    const secondary = normalizeRgbColor(raw.secondary);
+    if (!primary || !secondary) return null;
+    const settings = {
+        version: 1,
+        alwaysUseAvatarTheme: typeof raw.alwaysUseAvatarTheme === 'boolean' ? raw.alwaysUseAvatarTheme : DEFAULT_THEME_SETTINGS.alwaysUseAvatarTheme,
+        primary,
+        secondary,
+        customized: raw.customized === true || raw.avatarSeeded === true
+    };
+    Object.keys(THEME_RANGES).forEach(key => {
+        const value = Number(raw[key]);
+        settings[key] = Number.isFinite(value)
+            ? clamp(value, THEME_RANGES[key][0], THEME_RANGES[key][1])
+            : DEFAULT_THEME_SETTINGS[key];
+    });
+    return settings;
+}
+
+function loadThemeSettings() {
+    try {
+        const stored = localStorage.getItem('theme-settings');
+        if (stored) {
+            const normalized = normalizeThemeSettings(JSON.parse(stored));
+            if (normalized) return normalized;
+        }
+    } catch (error) {
+    }
+    return {
+        ...DEFAULT_THEME_SETTINGS,
+        primary: { ...DEFAULT_THEME_SETTINGS.primary },
+        secondary: { ...DEFAULT_THEME_SETTINGS.secondary }
+    };
+}
+
+function saveThemeSettings() {
+    try {
+        localStorage.setItem('theme-settings', JSON.stringify(themeSettings));
+    } catch (error) {
+    }
+}
+
+function avatarEncodeLightness() {
+    const defaults = DEFAULT_THEME_SETTINGS;
+    return {
+        primary: rgbToHsl(defaults.primary.r, defaults.primary.g, defaults.primary.b).l,
+        secondary: rgbToHsl(defaults.secondary.r, defaults.secondary.g, defaults.secondary.b).l
+    };
+}
+
+function applyTheme() {
+    if (themeSettings.alwaysUseAvatarTheme) {
+        const defaults = DEFAULT_THEME_SETTINGS;
+        const encode = avatarEncodeLightness();
+        if (lastAvatarColors) {
+            updateTheme(
+                hslToRgbFloat(lastAvatarColors.primary.h, lastAvatarColors.primary.s, encode.primary),
+                hslToRgbFloat(lastAvatarColors.secondary.h, lastAvatarColors.secondary.s, encode.secondary),
+                defaults
+            );
+        } else {
+            updateTheme(defaults.primary, defaults.secondary, defaults);
+        }
+        return;
+    }
+    updateTheme(themeSettings.primary, themeSettings.secondary, themeSettings);
+}
+
+function syncTrackedThemeColors() {
+    if (themeSettings.customized || !lastAvatarColors) return;
+    const encode = avatarEncodeLightness();
+    const primary = hslToRgbInt(lastAvatarColors.primary.h, lastAvatarColors.primary.s, encode.primary);
+    const secondary = hslToRgbInt(lastAvatarColors.secondary.h, lastAvatarColors.secondary.s, encode.secondary);
+    if (JSON.stringify(themeSettings.primary) === JSON.stringify(primary) &&
+        JSON.stringify(themeSettings.secondary) === JSON.stringify(secondary)) return;
+    themeSettings.primary = primary;
+    themeSettings.secondary = secondary;
+    saveThemeSettings();
+}
+
+function hexToRgb(hex) {
+    let value = String(hex).replace('#', '');
+    if (value.length === 3) value = value.split('').map(char => char + char).join('');
+    if (value.length !== 6 || /[^0-9a-fA-F]/.test(value)) return null;
+    return {
+        r: parseInt(value.slice(0, 2), 16),
+        g: parseInt(value.slice(2, 4), 16),
+        b: parseInt(value.slice(4, 6), 16)
+    };
+}
+
+function rgbToHex(r, g, b) {
+    const toHex = value => Math.round(clamp(value, 0, 255)).toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+function hslToRgbFloat(h, s, l) {
+    const saturation = s / 100;
+    const lightness = l / 100;
+    const k = n => (n + h / 30) % 12;
+    const a = saturation * Math.min(lightness, 1 - lightness);
+    const f = n => lightness - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
+    return { r: f(0) * 255, g: f(8) * 255, b: f(4) * 255 };
+}
+
+function hslToRgbInt(h, s, l) {
+    const rgb = hslToRgbFloat(h, s, l);
+    return { r: Math.round(rgb.r), g: Math.round(rgb.g), b: Math.round(rgb.b) };
+}
+
+function getThemeExportObject() {
+    return {
+        version: 1,
+        alwaysUseAvatarTheme: themeSettings.alwaysUseAvatarTheme,
+        primary: { ...themeSettings.primary },
+        secondary: { ...themeSettings.secondary },
+        surfaceSaturation: themeSettings.surfaceSaturation,
+        surfaceLightness: themeSettings.surfaceLightness,
+        surfaceStep: themeSettings.surfaceStep,
+        textLightness: themeSettings.textLightness
+    };
+}
+
+function highlightJson(json) {
+    const escaped = json
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    return escaped.replace(
+        /"(?:\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|-?\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b|\btrue\b|\bfalse\b|\bnull\b/g,
+        token => {
+            if (token.endsWith(':')) {
+                return `<span class="j-key">${token.slice(0, -1)}</span><span class="j-punc">:</span>`;
+            }
+            if (token.startsWith('"')) return `<span class="j-str">${token}</span>`;
+            if (token === 'true' || token === 'false') return `<span class="j-bool">${token}</span>`;
+            if (token === 'null') return `<span class="j-null">${token}</span>`;
+            return `<span class="j-num">${token}</span>`;
+        }
+    );
+}
+
+function fallbackCopyText(text) {
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    try {
+        document.execCommand('copy');
+    } catch (error) {
+    }
+    area.remove();
+}
+
+function copyTextToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text).catch(() => fallbackCopyText(text));
+    }
+    fallbackCopyText(text);
+    return Promise.resolve();
+}
+
+function initializeThemeEditor() {
+    const avatarWrap = document.getElementById('navAvatarWrap');
+    const editor = document.getElementById('themeEditor');
+    const toggle = document.getElementById('avatarThemeToggle');
+    const fileInput = document.getElementById('themeFileInput');
+    const themeCode = document.getElementById('themeCode');
+    const copyBtn = document.getElementById('copyThemeBtn');
+    const importArea = document.getElementById('importArea');
+    const applyImportBtn = document.getElementById('applyImportBtn');
+    const themeError = document.getElementById('themeError');
+    const primaryPicker = document.getElementById('primaryPicker');
+    const secondaryPicker = document.getElementById('secondaryPicker');
+    const primaryHex = document.getElementById('primaryHex');
+    const secondaryHex = document.getElementById('secondaryHex');
+    const themeCollapse = document.getElementById('themeCollapse');
+    const colorSliders = [
+        ['primaryR', 'primary', 'r', 'primaryRVal'],
+        ['primaryG', 'primary', 'g', 'primaryGVal'],
+        ['primaryB', 'primary', 'b', 'primaryBVal'],
+        ['secondaryR', 'secondary', 'r', 'secondaryRVal'],
+        ['secondaryG', 'secondary', 'g', 'secondaryGVal'],
+        ['secondaryB', 'secondary', 'b', 'secondaryBVal']
+    ];
+    const knobSliders = [
+        ['surfaceSat', 'surfaceSaturation'],
+        ['surfaceLight', 'surfaceLightness'],
+        ['surfaceStepIn', 'surfaceStep'],
+        ['textLight', 'textLightness']
+    ];
+
+    function positionEditor() {
+        const navRect = document.querySelector('.navbar').getBoundingClientRect();
+        const rect = avatarWrap.getBoundingClientRect();
+        const width = editor.offsetWidth;
+        const top = navRect.bottom + 16;
+        const left = clamp(rect.left - 10, 12, Math.max(12, window.innerWidth - width - 12));
+        editor.style.top = `${top}px`;
+        editor.style.left = `${left}px`;
+        editor.style.maxHeight = `${Math.max(240, window.innerHeight - top - 14)}px`;
+        editor.style.setProperty('--te-x', `${rect.left + rect.width / 2 - left}px`);
+        editor.style.setProperty('--te-y', `${rect.top + rect.height / 2 - top}px`);
+    }
+
+    function showView(name) {
+        editor.querySelectorAll('.theme-view').forEach(view => {
+            view.classList.toggle('active', view.dataset.view === name);
+        });
+        themeError.classList.remove('show');
+        if (name === 'import-text') importArea.value = '';
+        if (editor.classList.contains('open')) positionEditor();
+    }
+
+    function openEditor() {
+        positionEditor();
+        editor.classList.add('open');
+    }
+
+    function closeEditor() {
+        editor.classList.remove('open');
+        showView('main');
+    }
+
+    function toggleEditor() {
+        if (editor.classList.contains('open')) closeEditor();
+        else openEditor();
+    }
+
+    function syncControls() {
+        primaryPicker.value = rgbToHex(themeSettings.primary.r, themeSettings.primary.g, themeSettings.primary.b);
+        secondaryPicker.value = rgbToHex(themeSettings.secondary.r, themeSettings.secondary.g, themeSettings.secondary.b);
+        primaryHex.textContent = primaryPicker.value.toUpperCase();
+        secondaryHex.textContent = secondaryPicker.value.toUpperCase();
+        colorSliders.forEach(([id, side, key, valueId]) => {
+            const value = Math.round(themeSettings[side][key]);
+            document.getElementById(id).value = value;
+            document.getElementById(valueId).textContent = value;
+        });
+        knobSliders.forEach(([id, key]) => {
+            document.getElementById(id).value = themeSettings[key];
+            document.getElementById(`${id}Val`).textContent = themeSettings[key];
+        });
+        toggle.checked = themeSettings.alwaysUseAvatarTheme;
+        themeCollapse.classList.toggle('hidden', themeSettings.alwaysUseAvatarTheme);
+    }
+
+    function commitColorChange() {
+        themeSettings.customized = true;
+        saveThemeSettings();
+        syncControls();
+        applyTheme();
+    }
+
+    function applyImportedTheme(text) {
+        let parsed = null;
+        try {
+            parsed = JSON.parse(text);
+        } catch (error) {
+            parsed = null;
+        }
+        const normalized = parsed ? normalizeThemeSettings(parsed) : null;
+        if (!normalized) {
+            themeError.textContent = 'Invalid theme data, expected a valid theme JSON.';
+            themeError.classList.add('show');
+            return false;
+        }
+        normalized.customized = true;
+        themeSettings = normalized;
+        saveThemeSettings();
+        syncControls();
+        applyTheme();
+        return true;
+    }
+
+    avatarWrap.addEventListener('click', toggleEditor);
+    avatarWrap.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            toggleEditor();
+        }
+    });
+    document.getElementById('themeClose').addEventListener('click', closeEditor);
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && editor.classList.contains('open')) closeEditor();
+    });
+    window.addEventListener('resize', () => {
+        if (editor.classList.contains('open')) positionEditor();
+    });
+
+    document.addEventListener('click', event => {
+        if (!editor.classList.contains('open')) return;
+        if (editor.contains(event.target) || avatarWrap.contains(event.target)) return;
+        closeEditor();
+    });
+
+    toggle.addEventListener('change', () => {
+        themeSettings.alwaysUseAvatarTheme = toggle.checked;
+        saveThemeSettings();
+        syncControls();
+        applyTheme();
+    });
+
+    primaryPicker.addEventListener('input', () => {
+        const rgb = hexToRgb(primaryPicker.value);
+        if (!rgb) return;
+        themeSettings.primary = rgb;
+        commitColorChange();
+    });
+
+    secondaryPicker.addEventListener('input', () => {
+        const rgb = hexToRgb(secondaryPicker.value);
+        if (!rgb) return;
+        themeSettings.secondary = rgb;
+        commitColorChange();
+    });
+
+    colorSliders.forEach(([id, side, key]) => {
+        document.getElementById(id).addEventListener('input', event => {
+            themeSettings[side][key] = Number(event.target.value);
+            commitColorChange();
+        });
+    });
+
+    knobSliders.forEach(([id, key]) => {
+        document.getElementById(id).addEventListener('input', event => {
+            themeSettings[key] = Number(event.target.value);
+            saveThemeSettings();
+            syncControls();
+            applyTheme();
+        });
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', () => showView('export-choice'));
+    document.getElementById('importBtn').addEventListener('click', () => showView('import-choice'));
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+        themeSettings = {
+            ...DEFAULT_THEME_SETTINGS,
+            primary: { ...DEFAULT_THEME_SETTINGS.primary },
+            secondary: { ...DEFAULT_THEME_SETTINGS.secondary }
+        };
+        saveThemeSettings();
+        syncTrackedThemeColors();
+        syncControls();
+        applyTheme();
+        showView('main');
+    });
+
+    editor.querySelectorAll('[data-back]').forEach(button => {
+        button.addEventListener('click', () => showView('main'));
+    });
+
+    document.getElementById('exportFileBtn').addEventListener('click', () => {
+        const json = JSON.stringify(getThemeExportObject(), null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'theme.json';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+
+    document.getElementById('exportTextBtn').addEventListener('click', () => {
+        themeCode.innerHTML = highlightJson(JSON.stringify(getThemeExportObject(), null, 2));
+        showView('export-text');
+    });
+
+    copyBtn.addEventListener('click', () => {
+        copyTextToClipboard(themeCode.textContent).then(() => {
+            const icon = copyBtn.querySelector('.material-symbols-outlined');
+            const label = copyBtn.querySelector('.theme-btn-label');
+            icon.textContent = 'check';
+            label.textContent = 'Copied!';
+            setTimeout(() => {
+                icon.textContent = 'content_copy';
+                label.textContent = 'Copy';
+            }, 1600);
+        });
+    });
+
+    document.getElementById('importFileBtn').addEventListener('click', () => {
+        fileInput.value = '';
+        fileInput.click();
+    });
+
+    document.getElementById('importTextBtn').addEventListener('click', () => showView('import-text'));
+
+    fileInput.addEventListener('change', () => {
+        const file = fileInput.files && fileInput.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            if (applyImportedTheme(reader.result)) showView('main');
+        };
+        reader.onerror = () => {
+            themeError.textContent = 'Could not read the selected file.';
+            themeError.classList.add('show');
+        };
+        reader.readAsText(file);
+    });
+
+    applyImportBtn.addEventListener('click', () => {
+        if (applyImportedTheme(importArea.value)) showView('main');
+    });
+
+    importArea.addEventListener('input', () => themeError.classList.remove('show'));
+
+    syncControls();
+    applyTheme();
+}
 
