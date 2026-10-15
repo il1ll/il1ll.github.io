@@ -20,13 +20,16 @@ let allProjects = [];
 let lastCustomStatus = null;
 let lastActivities = [];
 let lastSpotifyData = null;
+let currentLyricsData = null;
+let lastLyricTrackId = null;
+let lastActiveLineId = null;
 let isDataLoaded = false;
 const DEFAULT_THEME_SETTINGS = {
     version: 1,
     alwaysUseAvatarTheme: true,
     primary: { r: 143, g: 177, b: 239 },
     secondary: { r: 56, g: 91, b: 148 },
-    surfaceSaturation: 4,
+    surfaceSaturation: 16,
     surfaceLightness: 6,
     surfaceStep: 4,
     textLightness: 92,
@@ -241,7 +244,7 @@ function updateTheme(primaryColor, secondaryColor, settings) {
     const primaryContainer = hslToHex(h2, containerSat, clamp(l2 * 0.5, 12, 30));
     const onPrimaryContainer = hslToHex(h2, containerSat, clamp(100 - l2 * 0.3, 72, 96));
 
-    const outlineVariant = hslToHex(h2, sNV, Math.round(clamp(l2 * 0.55, 12, 32)));
+    const outlineVariant = hslToHex(h1, Math.min(sNV + 8, 24), Math.round(clamp(l2 * 0.55, 12, 32)));
     const onSurface = hslToHex(h1, sNV, config.textLightness);
     const onSurfaceVar = hslToHex(h1, sNV, Math.max(config.textLightness - 24, 10));
 
@@ -685,7 +688,7 @@ async function handleEvent(message) {
 
         const spotifyChanged = updateSpotifyIfChanged(userData);
 
-        if (!customStatusChanged || spotifyChanged || hasOtherActivityChanges(userData.activities)) {
+        if (hasOtherActivityChanges(userData.activities)) {
             updateActivities(userData.activities);
         }
 
@@ -734,7 +737,14 @@ function updateSpotifyIfChanged(userData) {
             updateSpotify(userData.spotify);
         } else {
             const spotifyCard = document.getElementById('spotifyCard');
+            const lyricsCard = document.getElementById('lyricsCard');
             spotifyCard.classList.remove('spotify-active');
+            if (lyricsCard) lyricsCard.classList.remove('lyrics-active');
+            const lyricsContainer = document.getElementById('lyricsContainer');
+            if (lyricsContainer) lyricsContainer.innerHTML = '';
+            currentLyricsData = null;
+            lastLyricTrackId = null;
+            lastActiveLineId = null;
             updateContainerLayout();
             if (progressInterval) clearInterval(progressInterval);
         }
@@ -916,6 +926,9 @@ function updateSpotify(spotifyData) {
         const totalSeconds = Math.floor((duration % 60000) / 1000);
         document.getElementById('currentTime').textContent = `${currentMinutes}:${currentSeconds.toString().padStart(2, '0')}`;
         document.getElementById('totalTime').textContent = `${totalMinutes}:${totalSeconds.toString().padStart(2, '0')}`;
+
+        syncLyrics(elapsed);
+
         if (progress >= 100) clearInterval(progressInterval);
     }
     updateProgress();
@@ -936,6 +949,11 @@ function updateSpotify(spotifyData) {
     spotifyButton.appendChild(spotifyIcon);
     spotifyButton.appendChild(document.createTextNode('Play on Spotify'));
     spotifyButtons.appendChild(spotifyButton);
+
+    if (spotifyData.track_id !== lastLyricTrackId) {
+        lastLyricTrackId = spotifyData.track_id;
+        fetchLyrics(spotifyData);
+    }
 }
 
 function updateCustomStatus(activities) {
@@ -1007,6 +1025,7 @@ function updateCustomStatus(activities) {
 function updateContainerLayout() {
     const container = document.querySelector('.container');
     const spotifyCard = document.getElementById('spotifyCard');
+    const lyricsCard = document.getElementById('lyricsCard');
     const activitiesContainer = document.getElementById('activitiesContainer');
     if (!container || !spotifyCard || !activitiesContainer) return;
     const bodyStyle = window.getComputedStyle(document.body);
@@ -1015,6 +1034,7 @@ function updateContainerLayout() {
     const columnGap = 10;
     const hasActivities = activitiesContainer.children.length > 0;
     const hasSpotify = spotifyCard.classList.contains('spotify-active');
+    const hasLyrics = !!lyricsCard && lyricsCard.classList.contains('lyrics-active');
     const profileColumn = container.querySelector('.profile-column');
     const statusColumn = container.querySelector('.status-column');
     if (profileColumn && statusColumn) {
@@ -1022,9 +1042,14 @@ function updateContainerLayout() {
         if (spotifyCard.parentElement !== target) {
             target.appendChild(spotifyCard);
         }
+        if (lyricsCard && profileColumn && statusColumn) {
+            if (lyricsCard.parentElement !== statusColumn) {
+                statusColumn.appendChild(lyricsCard);
+            }
+        }
     }
     const maxColumns = Math.max(1, Math.floor((available + columnGap) / (columnWidth + columnGap)));
-    const columns = (hasActivities || hasSpotify) && maxColumns >= 2 ? 2 : 1;
+    const columns = (hasActivities || hasSpotify || hasLyrics) && maxColumns >= 2 ? 2 : 1;
     const rows = columns === 2 ? 1 : 2;
     container.style.setProperty('--smart-columns', String(columns));
     container.style.setProperty('--smart-rows', String(rows));
@@ -1044,6 +1069,25 @@ function updateActivities(activities) {
         activityCard.className = 'activity-card activity-active';
         activityCard.id = `activityCard-${index}`;
 
+        let activityIconPath = "M5.79335761,5 L18.2066424,5 C19.7805584,5 21.0868816,6.21634264 21.1990185,7.78625885 L21.8575059,17.0050826 C21.9307825,18.0309548 21.1585512,18.9219909 20.132679,18.9952675 C20.088523,18.9984215 20.0442685,19 20,19 C18.8245863,19 17.8000084,18.2000338 17.5149287,17.059715 L17,15 L7,15 L6.48507125,17.059715 C6.19999155,18.2000338 5.1754137,19 4,19 C2.97151413,19 2.13776159,18.1662475 2.13776159,17.1377616 C2.13776159,17.0934931 2.1393401,17.0492386 2.1424941,17.0050826 L2.80098151,7.78625885 C2.91311838,6.21634264 4.21944161,5 5.79335761,5 Z M14.5,10 C15.3284271,10 16,9.32842712 16,8.5 C16,7.67157288 15.3284271,7 14.5,7 C13.6715729,7 13,7.67157288 13,8.5 C13,9.32842712 13.6715729,10 14.5,10 Z M18.5,13 C19.3284271,13 20,12.3284271 20,11.5 C20,10.6715729 19.3284271,10 18.5,10 C17.6715729,10 17,10.6715729 17,11.5 C17,12.3284271 17.6715729,13 18.5,13 Z M6,9 L4,9 L4,11 L6,11 L6,13 L8,13 L8,11 L10,11 L10,9 L8,9 L8,7 L6,7 L6,9 Z";
+
+        switch (activity.type) {
+            case 1:
+                activityIconPath = "M4 2.5c-1.103 0-2 .897-2 2v11c0 1.104.897 2 2 2h7v2H7v2h10v-2h-4v-2h7c1.103 0 2-.896 2-2v-11c0-1.103-.897-2-2-2H4Zm16 2v9H4v-9h16Z";
+                break;
+            case 2:
+                activityIconPath = "M4 10a8 8 0 0 1 16 0v3a2 2 0 0 1-2 2h-1.5a1.5 1.5 0 0 1-1.5-1.5v-2A1.5 1.5 0 0 1 16.5 10H18a6 6 0 1 0-12 0h1.5A1.5 1.5 0 0 1 10 11.5v2A1.5 1.5 0 0 1 8.5 15H7a2 2 0 0 1-2-2v-3Z";
+                break;
+            case 3:
+                activityIconPath = "M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5ZM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z";
+                break;
+            case 5:
+                activityIconPath = "M12 2 9 9H2l6 4-2.5 7.5L12 16l6.5 4.5L16 13l6-4h-7L12 2Z";
+                break;
+            default:
+                break;
+        }
+
         let activityTitleText = '';
         switch (activity.type) {
             case 0: activityTitleText = 'Playing'; break;
@@ -1060,9 +1104,8 @@ function updateActivities(activities) {
 
         activityCard.innerHTML = `
             <div class="activity-header">
-                <svg class="activity-icon" viewBox="0 0 24 24" fill="#908caa">
-                    <path d="M5.79335761,5 L18.2066424,5 C19.7805584,5 21.0868816,6.21634264 21.1990185,7.78625885 L21.8575059,17.0050826 C21.9307825,18.0309548 21.1585512,18.9219909 20.132679,18.9952675 C20.088523,18.9984215 20.0442685,19 20,19 C18.8245863,19 17.8000084,18.2000338 17.5149287,17.059715 L17,15 L7,15 L6.48507125,17.059715 C6.19999155,18.2000338 5.1754137,19 4,19 C2.97151413,19 2.13776159,18.1662475 2.13776159,17.1377616 C2.13776159,17.0934931 2.1393401,17.0492386 2.1424941,17.0050826 L2.80098151,7.78625885 C2.91311838,6.21634264 4.21944161,5 5.79335761,5 Z M14.5,10 C15.3284271,10 16,9.32842712 16,8.5 C16,7.67157288 15.3284271,7 14.5,7 C13.6715729,7 13,7.67157288 13,8.5 C13,9.32842712 13.6715729,10 14.5,10 Z M18.5,13 C19.3284271,13 20,12.3284271 20,11.5 C20,10.6715729 19.3284271,10 18.5,10 C17.6715729,10 17,10.6715729 17,11.5 C17,12.3284271 17.6715729,13 18.5,13 Z M6,9 L4,9 L4,11 L6,11 L6,13 L8,13 L8,11 L10,11 L10,9 L8,9 L8,7 L6,7 L6,9 ZM5.79335761,5 L18.2066424,5 C19.7805584,5 21.0868816,6.21634264 21.1990185,7.78625885 L21.8575059,17.0050826 C21.9307825,18.0309548 21.1585512,18.9219909 20.132679,18.9952675 C20.088523,18.9984215 20.0442685,19 20,19 C18.8245863,19 17.8000084,18.2000338 17.5149287,17.059715 L17,15 L7,15 L6.48507125,17.059715 C6.19999155,18.2000338 5.1754137,19 4,19 C2.97151413,19 2.13776159,18.1662475 2.13776159,17.1377616 C2.13776159,17.0934931 2.1393401,17.0492386 2.1424941,17.0050826 L2.80098151,7.78625885 C2.91311838,6.21634264 4.21944161,5 5.79335761,5 Z M14.5,10 C15.3284271,10 16,9.32842712 16,8.5 C16,7.67157288 15.3284271,7 14.5,7 C13.6715729,7 13,7.67157288 13,8.5 C13,9.32842712 13.6715729,10 14.5,10 Z M18.5,13 C19.3284271,13 20,12.3284271 20,11.5 C20,10.6715729 19.3284271,10 18.5,10 C17.6715729,10 17,10.6715729 17,11.5 C17,12.3284271 17.6715729,13 18.5,13 Z M6,9 L4,9 L4,11 L6,11 L6,13 L8,13 L8,11 L10,11 L10,9 L8,9 L8,7 L6,7 L6,9 Z"/>
-                </svg>
+                <svg class="activity-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="${activityIconPath}"/>
                 <div class="activity-title">${activityTitleText}</div>
             </div>
             <div class="activity-content">
@@ -1708,3 +1751,392 @@ function initializeThemeEditor() {
     applyTheme();
 }
 
+
+window.addEventListener('scroll', function () {
+    const navbar = document.querySelector('.navbar');
+    if (!navbar) return;
+    if (window.scrollY > 24) navbar.classList.add('scrolled');
+    else navbar.classList.remove('scrolled');
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const navbar = document.querySelector('.navbar');
+    if (window.scrollY > 24 && navbar) navbar.classList.add('scrolled');
+});
+
+window.addEventListener('load', function () {
+    window.scrollTo(0, 0);
+});
+
+document.addEventListener('mousemove', function (event) {
+    document.querySelectorAll('.coder').forEach(function (card) {
+        const rect = card.getBoundingClientRect();
+        const x = ((event.clientX - rect.left) / rect.width) * 100;
+        const y = ((event.clientY - rect.top) / rect.height) * 100;
+        card.style.setProperty('--mx', x + '%');
+        card.style.setProperty('--my', y + '%');
+    });
+});
+document.addEventListener('DOMContentLoaded', function () {
+    function updateCursor(event, element) {
+        const rect = element.getBoundingClientRect();
+        const corner = 22;
+        const scrollbar = 18;
+        if (event.clientX >= rect.right - corner && event.clientY >= rect.bottom - corner) {
+            element.style.setProperty('cursor', "url('cursor/Diagonal2.png') 15 15, se-resize", 'important');
+            return;
+        }
+        if (element.scrollHeight > element.clientHeight + 1 && event.clientX >= rect.right - scrollbar) {
+            element.style.setProperty('cursor', "url('cursor/Vertical.png') 15 15, ns-resize", 'important');
+            return;
+        }
+        element.style.setProperty('cursor', "url('cursor/Text.png') 4 9, text", 'important');
+    }
+    document.addEventListener('mousemove', function (event) {
+        document.querySelectorAll('.theme-textarea').forEach(function (element) {
+            const rect = element.getBoundingClientRect();
+            if (event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom) {
+                updateCursor(event, element);
+            }
+        });
+    });
+});
+
+const WORD_TIMING_ADVANCE_MS = 120;
+
+function sanitizeForUrl(str) {
+    if (!str) return '';
+    return str.replace(/;/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function isArabic(text) {
+    const pattern = /[\u0600-\u06FF\u0750-\u077F]/;
+    return pattern.test(text);
+}
+
+async function fetchLyrics(spotifyData) {
+    const lyricsContainer = document.getElementById('lyricsContainer');
+    const lyricsCard = document.getElementById('lyricsCard');
+    if (!lyricsContainer) return;
+
+    currentLyricsData = null;
+    lastActiveLineId = null;
+    lyricsContainer.innerHTML = '';
+    if (lyricsCard) {
+        lyricsCard.classList.remove('lyrics-active');
+        updateContainerLayout();
+    }
+
+    const track = sanitizeForUrl(spotifyData.song);
+    const artist = sanitizeForUrl(spotifyData.artist);
+    const trackId = spotifyData.track_id;
+
+    console.log('🎶 Fetching lyrics for:', track, 'by', artist);
+
+    if (!trackId) {
+        lyricsContainer.innerHTML = '';
+        if (lyricsCard) {
+            lyricsCard.classList.remove('lyrics-active');
+            updateContainerLayout();
+        }
+        return;
+    }
+
+    const apiUrl = `https://spotifyplus-api.devon-shoutz.workers.dev/api/lyrics/${trackId}`;
+    const url = `https://lyrics.meow67-2a4.workers.dev/?target=${encodeURIComponent(apiUrl)}`;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    try {
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        if (data && Array.isArray(data.Content) && data.Content.length) {
+            const isSyllable = data.Type === 'Syllable' || (data.Content[0] && data.Content[0].Lead);
+            let lines = [];
+            if (isSyllable) {
+                lines = data.Content.map(item => {
+                    const lead = item.Lead || {};
+                    const syllables = Array.isArray(lead.Syllables) ? lead.Syllables : [];
+                    const tokens = [];
+                    let currentToken = null;
+                    let prevSyllable = null;
+                    syllables.forEach(syl => {
+                        const text = (syl && syl.Text != null) ? String(syl.Text).trim() : '';
+                        if (!text) return;
+                        const startMs = Math.round(((syl.StartTime != null ? syl.StartTime : lead.StartTime) || 0) * 1000);
+                        const endMs = Math.round(((syl.EndTime != null ? syl.EndTime : lead.EndTime) || 0) * 1000);
+                        if (!currentToken) {
+                            currentToken = { text, startMs, endMs };
+                        } else {
+                            if (prevSyllable && prevSyllable.IsPartOfWord) {
+                                currentToken.text += text;
+                            } else {
+                                currentToken.text += ' ' + text;
+                            }
+                            currentToken.endMs = endMs;
+                        }
+                        prevSyllable = syl;
+                        if (!syl.IsPartOfWord) {
+                            tokens.push(currentToken);
+                            currentToken = null;
+                        }
+                    });
+                    if (currentToken) tokens.push(currentToken);
+
+                    const lineText = tokens.map(t => t.text).join(' ').replace(/\s+/g, ' ').trim();
+                    return {
+                        text: lineText,
+                        startMs: Math.round((lead.StartTime || item.StartTime || 0) * 1000),
+                        endMs: Math.round((lead.EndTime || item.EndTime || 0) * 1000),
+                        tokens: tokens
+                    };
+                }).filter(line => (line.text && line.text.trim()) || (line.tokens && line.tokens.length));
+            } else {
+                lines = data.Content
+                    .filter(item => item && item.Text && String(item.Text).trim())
+                    .map(item => ({
+                        text: item.Text,
+                        startMs: Math.round((item.StartTime || 0) * 1000),
+                        endMs: Math.round((item.EndTime || 0) * 1000)
+                    }));
+            }
+
+            if (lines.length) {
+                if (isSyllable) {
+                    currentLyricsData = {
+                        wordSyncedLyrics: lines,
+                        status: 'wordSynced'
+                    };
+                } else {
+                    currentLyricsData = {
+                        lineSyncedLyrics: lines,
+                        status: 'lineSynced'
+                    };
+                }
+                renderLyrics();
+            } else {
+                lyricsContainer.innerHTML = '';
+                if (lyricsCard) {
+                    lyricsCard.classList.remove('lyrics-active');
+                    updateContainerLayout();
+                }
+            }
+        } else if (data && Array.isArray(data.Lines) && data.Lines.length) {
+            const lines = data.Lines
+                .map(item => (item && (item.Text || item.text)) ? String(item.Text || item.text).trim() : '')
+                .filter(t => t);
+            if (lines.length) {
+                currentLyricsData = {
+                    plainLyrics: lines.join('\n'),
+                    status: 'plain'
+                };
+                renderLyrics();
+            } else {
+                lyricsContainer.innerHTML = '';
+                if (lyricsCard) {
+                    lyricsCard.classList.remove('lyrics-active');
+                    updateContainerLayout();
+                }
+            }
+        } else {
+            lyricsContainer.innerHTML = '';
+            if (lyricsCard) {
+                lyricsCard.classList.remove('lyrics-active');
+                updateContainerLayout();
+            }
+        }
+    } catch (error) {
+        clearTimeout(timeoutId);
+        console.error('Failed to fetch lyrics:', error);
+        lyricsContainer.innerHTML = '';
+        if (lyricsCard) {
+            lyricsCard.classList.remove('lyrics-active');
+            updateContainerLayout();
+        }
+    }
+}
+
+function parseLRC(lrcString) {
+    const lines = lrcString.split('\n');
+    const result = [];
+    lines.forEach(line => {
+        const match = line.match(/\[(\d+):(\d+\.\d+)\](.*)/);
+        if (match) {
+            const minutes = parseInt(match[1]);
+            const seconds = parseFloat(match[2]);
+            const text = match[3].trim();
+            const startMs = (minutes * 60 + seconds) * 1000;
+            result.push({ text, startMs });
+        }
+    });
+    for (let i = 0; i < result.length; i++) {
+        result[i].endMs = i < result.length - 1 ? result[i + 1].startMs : result[i].startMs + 5000;
+    }
+    return result;
+}
+
+function renderLyrics() {
+    const container = document.getElementById('lyricsContainer');
+    const lyricsCard = document.getElementById('lyricsCard');
+    if (!container) return;
+    container.innerHTML = '';
+    container.classList.remove('lyrics-static');
+    if (currentLyricsData && currentLyricsData.status === 'plain') {
+        container.classList.add('lyrics-static');
+    }
+    if (!currentLyricsData) {
+        if (lyricsCard) {
+            lyricsCard.classList.remove('lyrics-active');
+            updateContainerLayout();
+        }
+        return;
+    }
+
+    if (lyricsCard) {
+        lyricsCard.classList.add('lyrics-active');
+    }
+
+    const lyrics = currentLyricsData.wordSyncedLyrics || currentLyricsData.lineSyncedLyrics || currentLyricsData.plainLyrics;
+    const isSynced = !!(currentLyricsData.wordSyncedLyrics || currentLyricsData.lineSyncedLyrics);
+
+    let parsedLyrics;
+    if (isSynced) {
+        parsedLyrics = typeof lyrics === 'string' ? parseLRC(lyrics) : lyrics;
+    } else {
+        parsedLyrics = lyrics.split('\n').map(l => ({ text: l.trim(), startMs: -1, endMs: -1 }));
+    }
+
+    if (!Array.isArray(parsedLyrics) || parsedLyrics.length === 0) {
+        if (lyricsCard) {
+            lyricsCard.classList.remove('lyrics-active');
+            updateContainerLayout();
+        }
+        return;
+    }
+
+    parsedLyrics.forEach((line, lineIndex) => {
+        const lineEl = document.createElement('div');
+        lineEl.className = 'lyric-line';
+        lineEl.id = `line-${lineIndex}`;
+        lineEl.dataset.start = line.startMs;
+        lineEl.dataset.end = line.endMs;
+
+        if (isArabic(line.text)) {
+            lineEl.classList.add('rtl');
+        }
+
+        if (currentLyricsData.status === 'wordSynced' && line.tokens) {
+            line.tokens.forEach((token, tokenIndex) => {
+                const wordEl = document.createElement('span');
+                wordEl.className = 'lyric-word';
+                wordEl.dataset.start = token.startMs;
+
+                if (isArabic(token.text)) {
+                    wordEl.classList.add('arabic');
+                    wordEl.textContent = token.text;
+                } else {
+                    const chars = token.text.split('');
+                    chars.forEach((char, charIndex) => {
+                        const charSpan = document.createElement('span');
+                        charSpan.className = 'lyric-char';
+                        charSpan.textContent = char;
+                        charSpan.style.setProperty('--char-index', charIndex);
+                        wordEl.appendChild(charSpan);
+                    });
+                }
+
+                lineEl.appendChild(wordEl);
+            });
+        } else {
+            const words = line.text.split(/\s+/);
+            words.forEach((word, wIndex) => {
+                const wordEl = document.createElement('span');
+                wordEl.className = 'lyric-word';
+
+                if (isArabic(word)) {
+                    wordEl.classList.add('arabic');
+                    wordEl.textContent = word;
+                } else {
+                    word.split('').forEach((char, charIndex) => {
+                        const charSpan = document.createElement('span');
+                        charSpan.className = 'lyric-char';
+                        charSpan.textContent = char;
+                        charSpan.style.setProperty('--char-index', charIndex);
+                        wordEl.appendChild(charSpan);
+                    });
+                }
+
+                lineEl.appendChild(wordEl);
+            });
+        }
+        container.appendChild(lineEl);
+    });
+
+    container.scrollTop = 0;
+    lastActiveLineId = null;
+    updateContainerLayout();
+}
+
+function syncLyrics(elapsed) {
+    if (!currentLyricsData || (!currentLyricsData.wordSyncedLyrics && !currentLyricsData.lineSyncedLyrics)) return;
+    const container = document.getElementById('lyricsContainer');
+    if (!container) return;
+    const lines = container.querySelectorAll('.lyric-line');
+    let activeLine = null;
+
+    lines.forEach((line, index) => {
+        const start = parseInt(line.dataset.start);
+        const end = parseInt(line.dataset.end) || (index < lines.length - 1 ? parseInt(lines[index + 1].dataset.start) : start + 5000);
+
+        if (elapsed >= start && elapsed <= end) {
+            line.classList.add('active');
+            activeLine = line;
+
+            const words = line.querySelectorAll('.lyric-word');
+            words.forEach((word, wIndex) => {
+                const startVal = word.dataset.start;
+                if (startVal) {
+                    const wStart = Math.max(0, parseFloat(startVal) - WORD_TIMING_ADVANCE_MS);
+                    const nextStartVal = wIndex < words.length - 1 ? words[wIndex + 1].dataset.start : null;
+                    const nextWStart = nextStartVal ? Math.max(0, parseFloat(nextStartVal) - WORD_TIMING_ADVANCE_MS) : (end + 120);
+
+                    if (elapsed >= wStart) {
+                        word.classList.add('passed');
+                        if (elapsed <= nextWStart) {
+                            word.classList.add('active');
+                        } else {
+                            word.classList.remove('active');
+                        }
+                    } else {
+                        word.classList.remove('active', 'passed');
+                    }
+                } else {
+                    word.classList.add('active');
+                }
+            });
+        } else {
+            line.classList.remove('active');
+            line.querySelectorAll('.lyric-word').forEach(w => w.classList.remove('active', 'passed'));
+        }
+    });
+
+    if (activeLine) {
+        const lineId = activeLine.id;
+        if (lineId !== lastActiveLineId) {
+            lastActiveLineId = lineId;
+
+            const containerRect = container.getBoundingClientRect();
+            const lineRect = activeLine.getBoundingClientRect();
+            const relativeTop = lineRect.top - containerRect.top + container.scrollTop;
+
+            container.scrollTo({
+                top: relativeTop - (container.clientHeight / 2) + (activeLine.clientHeight / 2),
+                behavior: 'smooth'
+            });
+        }
+    }
+}
