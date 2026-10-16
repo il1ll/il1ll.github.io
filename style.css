@@ -5,6 +5,13 @@
     src: local('Samsung Sharp Sans Bold'), url('https://fonts.cdnfonts.com/s/17880/samsungsharpsans-bold.woff') format('woff');
 }
 
+@font-face {
+    font-family: 'Lyrics';
+    font-style: normal;
+    font-weight: 100 900;
+    src: url('fonts/lyrics.ttf') format('truetype');
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -2579,6 +2586,7 @@ textarea {
     display: inline-block;
     white-space: nowrap;
     margin: 0 4px;
+    font-family: 'Lyrics', 'Samsung Sharp Sans', 'Google Sans', 'Roboto', sans-serif;
     transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
