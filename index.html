@@ -11,16 +11,30 @@
     <meta name="twitter:title" content="coder">
     <meta name="twitter:description" content="Full Stack Dev :)">
     <meta name="twitter:image" content="Photos/Logo.png">
+    <meta name="theme-color" content="#141218">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://www.youtube.com; object-src 'none'; base-uri 'self'">
     <link rel="icon" type="image/png" href="Photos/Logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
     <link rel="stylesheet" href="style.css">
+    <script src="vendor/material-color-utilities.min.js"></script>
+    <script src="js/theme.js"></script>
 </head>
 <body>
+    <svg class="themed-icon-defs" aria-hidden="true">
+        <filter id="themedIconFilter" color-interpolation-filters="sRGB">
+            <feColorMatrix type="saturate" values="0"></feColorMatrix>
+            <feComponentTransfer>
+                <feFuncR type="table" tableValues="0 1"></feFuncR>
+                <feFuncG type="table" tableValues="0 1"></feFuncG>
+                <feFuncB type="table" tableValues="0 1"></feFuncB>
+            </feComponentTransfer>
+        </filter>
+    </svg>
     <div class="loading-screen" id="loadingScreen">
-        <div class="loader"></div>
+        <svg class="loader" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="20"></circle></svg>
         <div class="loading-text">Loading...</div>
     </div>
 
@@ -46,179 +60,275 @@
             </div>
         </div>
     </nav>
-    <div class="nav-menu-overlay" id="menuOverlay"></div>
-
-    <div class="theme-editor" id="themeEditor">
-        <div class="theme-editor-head">
-            <span class="material-symbols-outlined theme-editor-icon">palette</span>
-            <span class="theme-editor-title">Theme Editor</span>
-            <button class="theme-editor-close" id="themeClose">
+    <div class="theme-scrim" id="themeScrim"></div>
+    <aside class="theme-editor" id="themeEditor" role="dialog" aria-modal="true" aria-labelledby="themeEditorTitle">
+        <header class="theme-app-bar">
+            <button class="theme-icon-btn" id="themeBack" type="button" aria-label="Back" hidden>
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+            <h2 class="theme-app-bar-title" id="themeEditorTitle">Theme Editor</h2>
+            <button class="theme-icon-btn" id="themeClose" type="button" aria-label="Close">
                 <span class="material-symbols-outlined">close</span>
             </button>
-        </div>
-        <div class="theme-editor-body">
-            <div class="theme-view active" data-view="main">
-                <div class="theme-row-switch">
-                    <div class="theme-row-info">
-                        <span class="material-symbols-outlined">auto_awesome</span>
-                        <div>
-                            <div class="theme-label">Always use avatar theme</div>
-                            <div class="theme-hint">Use the colors extracted from the avatar</div>
+        </header>
+        <div class="theme-editor-body" id="themeEditorBody">
+            <div class="theme-view active" data-view="main" data-title="Theme Editor">
+                <section class="theme-section">
+                    <p class="theme-supporting" id="albumHint" hidden>Colors are following the current song. Turn off Follow album art in Display to use the colors below.</p>
+                    <div class="theme-tabs" role="tablist">
+                        <button class="theme-tab" type="button" role="tab" data-tab="avatar">Avatar colors</button>
+                        <button class="theme-tab" type="button" role="tab" data-tab="preset">Basic colors</button>
+                        <button class="theme-tab" type="button" role="tab" data-tab="custom">Custom</button>
+                    </div>
+                    <div class="theme-tab-panel" data-panel="avatar">
+                        <div class="theme-swatches" id="avatarSwatches"></div>
+                        <p class="theme-supporting" id="avatarHint"></p>
+                    </div>
+                    <div class="theme-tab-panel" data-panel="preset">
+                        <div class="theme-swatches" id="presetSwatches"></div>
+                    </div>
+                    <div class="theme-tab-panel" data-panel="custom">
+                        <div class="theme-seed-row">
+                            <label class="theme-color-well" aria-label="Pick seed color">
+                                <input type="color" id="customSeedPicker">
+                            </label>
+                            <div class="theme-text-field">
+                                <input type="text" id="customSeedHex" maxlength="7" spellcheck="false" autocomplete="off" placeholder=" ">
+                                <label for="customSeedHex">Seed color</label>
+                            </div>
+                        </div>
+                        <div class="theme-slider" data-slider="hue">
+                            <div class="theme-slider-head"><span>Hue</span><span id="customHueVal">0</span></div>
+                            <input type="range" id="customHue" min="0" max="360" step="1" aria-label="Hue">
+                        </div>
+                        <div class="theme-slider" data-slider="chroma">
+                            <div class="theme-slider-head"><span>Chroma</span><span id="customChromaVal">0</span></div>
+                            <input type="range" id="customChroma" min="0" max="120" step="1" aria-label="Chroma">
+                        </div>
+                        <div class="theme-slider" data-slider="tone">
+                            <div class="theme-slider-head"><span>Tone</span><span id="customToneVal">0</span></div>
+                            <input type="range" id="customTone" min="0" max="100" step="1" aria-label="Tone">
+                        </div>
+                        <div class="theme-override-row">
+                            <span class="material-symbols-outlined theme-list-icon">colorize</span>
+                            <div class="theme-list-text">
+                                <div class="theme-list-title">Exact color</div>
+                                <div class="theme-list-subtitle">Use the chroma and tone as they are for primary</div>
+                            </div>
+                            <label class="theme-switch"><input type="checkbox" id="exactSeedToggle" aria-label="Use the exact color for primary"><span class="theme-switch-track"><span class="theme-switch-thumb"></span></span></label>
+                        </div>
+                        <div class="theme-override-row">
+                            <label class="theme-color-well theme-color-well-small" aria-label="Pick secondary color">
+                                <input type="color" id="secondaryOverridePicker">
+                            </label>
+                            <div class="theme-list-text">
+                                <div class="theme-list-title">Secondary color</div>
+                                <div class="theme-list-subtitle" id="secondaryOverrideLabel">Generated from seed</div>
+                            </div>
+                            <label class="theme-switch"><input type="checkbox" id="secondaryOverrideToggle" aria-label="Override secondary color"><span class="theme-switch-track"><span class="theme-switch-thumb"></span></span></label>
+                        </div>
+                        <div class="theme-override-row">
+                            <label class="theme-color-well theme-color-well-small" aria-label="Pick tertiary color">
+                                <input type="color" id="tertiaryOverridePicker">
+                            </label>
+                            <div class="theme-list-text">
+                                <div class="theme-list-title">Tertiary color</div>
+                                <div class="theme-list-subtitle" id="tertiaryOverrideLabel">Generated from seed</div>
+                            </div>
+                            <label class="theme-switch"><input type="checkbox" id="tertiaryOverrideToggle" aria-label="Override tertiary color"><span class="theme-switch-track"><span class="theme-switch-thumb"></span></span></label>
                         </div>
                     </div>
-                    <label class="theme-switch">
-                        <input type="checkbox" id="avatarThemeToggle" checked>
-                        <span class="theme-switch-track"><span class="theme-switch-thumb"></span></span>
-                    </label>
-                </div>
+                </section>
 
-                <div class="theme-collapse hidden" id="themeCollapse">
-                    <div class="theme-collapse-inner">
-                        <div class="theme-section" id="primarySection">
-                            <div class="theme-section-title">Primary color</div>
-                            <div class="theme-color-head">
-                                <input type="color" class="theme-swatch" id="primaryPicker" value="#8fb1ef">
-                                <span class="theme-hex" id="primaryHex">#8FB1EF</span>
-                            </div>
-                            <div class="theme-slider-row">
-                                <span class="theme-slider-key">R</span>
-                                <input type="range" id="primaryR" min="0" max="255" step="1" value="143">
-                                <span class="theme-slider-val" id="primaryRVal">143</span>
-                            </div>
-                            <div class="theme-slider-row">
-                                <span class="theme-slider-key">G</span>
-                                <input type="range" id="primaryG" min="0" max="255" step="1" value="177">
-                                <span class="theme-slider-val" id="primaryGVal">177</span>
-                            </div>
-                            <div class="theme-slider-row">
-                                <span class="theme-slider-key">B</span>
-                                <input type="range" id="primaryB" min="0" max="255" step="1" value="239">
-                                <span class="theme-slider-val" id="primaryBVal">239</span>
+                <section class="theme-section">
+                    <h3 class="theme-section-title">Color style</h3>
+                    <div class="theme-styles" id="styleGrid"></div>
+                    <p class="theme-supporting" id="styleHint" hidden>This image has no real colors, so Monochrome is used.</p>
+                </section>
+
+                <section class="theme-section">
+                    <h3 class="theme-section-title">Display</h3>
+                    <div class="theme-group">
+                        <div class="theme-group-item theme-group-stack">
+                            <div class="theme-list-title">Dark theme</div>
+                            <div class="theme-segmented" role="radiogroup" aria-label="Dark theme" data-setting="mode">
+                                <button class="theme-segment" type="button" role="radio" data-value="system">
+                                    <span class="material-symbols-outlined">check</span>System
+                                </button>
+                                <button class="theme-segment" type="button" role="radio" data-value="light">
+                                    <span class="material-symbols-outlined">check</span>Light
+                                </button>
+                                <button class="theme-segment" type="button" role="radio" data-value="dark">
+                                    <span class="material-symbols-outlined">check</span>Dark
+                                </button>
                             </div>
                         </div>
-
-                        <div class="theme-section" id="secondarySection">
-                            <div class="theme-section-title">Secondary color</div>
-                            <div class="theme-color-head">
-                                <input type="color" class="theme-swatch" id="secondaryPicker" value="#385b94">
-                                <span class="theme-hex" id="secondaryHex">#385B94</span>
-                            </div>
-                            <div class="theme-slider-row">
-                                <span class="theme-slider-key">R</span>
-                                <input type="range" id="secondaryR" min="0" max="255" step="1" value="56">
-                                <span class="theme-slider-val" id="secondaryRVal">56</span>
-                            </div>
-                            <div class="theme-slider-row">
-                                <span class="theme-slider-key">G</span>
-                                <input type="range" id="secondaryG" min="0" max="255" step="1" value="91">
-                                <span class="theme-slider-val" id="secondaryGVal">91</span>
-                            </div>
-                            <div class="theme-slider-row">
-                                <span class="theme-slider-key">B</span>
-                                <input type="range" id="secondaryB" min="0" max="255" step="1" value="148">
-                                <span class="theme-slider-val" id="secondaryBVal">148</span>
+                        <div class="theme-group-item theme-group-stack">
+                            <div class="theme-list-title">Color contrast</div>
+                            <div class="theme-segmented" role="radiogroup" aria-label="Color contrast" data-setting="contrast">
+                                <button class="theme-segment" type="button" role="radio" data-value="0">
+                                    <span class="material-symbols-outlined">check</span>Standard
+                                </button>
+                                <button class="theme-segment" type="button" role="radio" data-value="0.5">
+                                    <span class="material-symbols-outlined">check</span>Medium
+                                </button>
+                                <button class="theme-segment" type="button" role="radio" data-value="1">
+                                    <span class="material-symbols-outlined">check</span>High
+                                </button>
                             </div>
                         </div>
+                        <label class="theme-group-item theme-list-row" id="pitchBlackRow">
+                            <span class="material-symbols-outlined theme-list-icon">contrast</span>
+                            <span class="theme-list-text">
+                                <span class="theme-list-title">Pitch black</span>
+                                <span class="theme-list-subtitle">Pure black surfaces for AMOLED screens</span>
+                            </span>
+                            <span class="theme-switch"><input type="checkbox" data-switch="pitchBlack"><span class="theme-switch-track"><span class="theme-switch-thumb"></span></span></span>
+                        </label>
+                        <label class="theme-group-item theme-list-row">
+                            <span class="material-symbols-outlined theme-list-icon">apps</span>
+                            <span class="theme-list-text">
+                                <span class="theme-list-title">Themed icons</span>
+                                <span class="theme-list-subtitle">Tint skills, games and project icons</span>
+                            </span>
+                            <span class="theme-switch"><input type="checkbox" data-switch="themedIcons"><span class="theme-switch-track"><span class="theme-switch-thumb"></span></span></span>
+                        </label>
+                        <label class="theme-group-item theme-list-row">
+                            <span class="material-symbols-outlined theme-list-icon">album</span>
+                            <span class="theme-list-text">
+                                <span class="theme-list-title">Follow album art</span>
+                                <span class="theme-list-subtitle">Theme changes with the current song</span>
+                            </span>
+                            <span class="theme-switch"><input type="checkbox" data-switch="followAlbumArt"><span class="theme-switch-track"><span class="theme-switch-thumb"></span></span></span>
+                        </label>
+                    </div>
+                </section>
 
-                        <div class="theme-section" id="adjustSection">
-                            <div class="theme-section-title">Adjust</div>
-                            <div class="theme-slider-row">
-                                <span class="theme-slider-name">Surface saturation</span>
-                                <input type="range" id="surfaceSat" min="0" max="20" step="1" value="4">
-                                <span class="theme-slider-val" id="surfaceSatVal">4</span>
+                <section class="theme-section">
+                    <h3 class="theme-section-title">Shape</h3>
+                    <div class="theme-group">
+                        <div class="theme-group-item theme-group-stack">
+                            <div class="theme-list-title">Icon shape</div>
+                            <div class="theme-shapes" id="iconShapes"></div>
+                        </div>
+                        <div class="theme-group-item theme-group-stack">
+                            <div class="theme-list-title">Corners</div>
+                            <div class="theme-segmented" role="radiogroup" aria-label="Corner presets" id="cornerPresets">
+                                <button class="theme-segment" type="button" role="radio" data-value="sharp">
+                                    <span class="material-symbols-outlined">check</span>Sharp
+                                </button>
+                                <button class="theme-segment" type="button" role="radio" data-value="default">
+                                    <span class="material-symbols-outlined">check</span>Default
+                                </button>
+                                <button class="theme-segment" type="button" role="radio" data-value="round">
+                                    <span class="material-symbols-outlined">check</span>Round
+                                </button>
                             </div>
-                            <div class="theme-slider-row">
-                                <span class="theme-slider-name">Surface lightness</span>
-                                <input type="range" id="surfaceLight" min="0" max="14" step="1" value="6">
-                                <span class="theme-slider-val" id="surfaceLightVal">6</span>
+                            <div class="theme-slider theme-corner-slider">
+                                <div class="theme-slider-head"><span>Sections</span><span data-corner-value="section">0</span></div>
+                                <input type="range" data-corner="section" min="0" max="64" step="1" aria-label="Sections corners">
                             </div>
-                            <div class="theme-slider-row">
-                                <span class="theme-slider-name">Surface step</span>
-                                <input type="range" id="surfaceStepIn" min="2" max="6" step="1" value="4">
-                                <span class="theme-slider-val" id="surfaceStepInVal">4</span>
+                            <div class="theme-slider theme-corner-slider">
+                                <div class="theme-slider-head"><span>Cards</span><span data-corner-value="card">0</span></div>
+                                <input type="range" data-corner="card" min="0" max="40" step="1" aria-label="Cards corners">
                             </div>
-                            <div class="theme-slider-row">
-                                <span class="theme-slider-name">Text lightness</span>
-                                <input type="range" id="textLight" min="85" max="98" step="1" value="92">
-                                <span class="theme-slider-val" id="textLightVal">92</span>
+                            <div class="theme-slider theme-corner-slider">
+                                <div class="theme-slider-head"><span>Buttons</span><span data-corner-value="button">0</span></div>
+                                <input type="range" data-corner="button" min="0" max="20" step="1" aria-label="Buttons corners">
+                            </div>
+                            <div class="theme-slider theme-corner-slider">
+                                <div class="theme-slider-head"><span>Navigation bar</span><span data-corner-value="nav">0</span></div>
+                                <input type="range" data-corner="nav" min="0" max="32" step="1" aria-label="Navigation bar corners">
                             </div>
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <div class="theme-actions">
-                    <button class="theme-btn" id="exportBtn">
-                        <span class="material-symbols-outlined">download</span>
-                        <span class="theme-btn-label">Export</span>
+                <section class="theme-section">
+                    <h3 class="theme-section-title">Manage</h3>
+                    <div class="theme-group">
+                        <button class="theme-group-item theme-list-row" id="paletteBtn" type="button">
+                            <span class="material-symbols-outlined theme-list-icon">palette</span>
+                            <span class="theme-list-text">
+                                <span class="theme-list-title">Color palette</span>
+                                <span class="theme-list-subtitle">Every color role and tone of this theme</span>
+                            </span>
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </button>
+                        <button class="theme-group-item theme-list-row" id="exportBtn" type="button">
+                            <span class="material-symbols-outlined theme-list-icon">upload</span>
+                            <span class="theme-list-text"><span class="theme-list-title">Export theme</span></span>
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </button>
+                        <button class="theme-group-item theme-list-row" id="importBtn" type="button">
+                            <span class="material-symbols-outlined theme-list-icon">download</span>
+                            <span class="theme-list-text"><span class="theme-list-title">Import theme</span></span>
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </button>
+                        <button class="theme-group-item theme-list-row" id="resetBtn" type="button">
+                            <span class="material-symbols-outlined theme-list-icon">restart_alt</span>
+                            <span class="theme-list-text"><span class="theme-list-title">Reset to default</span></span>
+                        </button>
+                    </div>
+                </section>
+            </div>
+
+            <div class="theme-view" data-view="palette" data-title="Color palette">
+                <h3 class="theme-section-title">Color roles</h3>
+                <div class="theme-roles" id="themeRoles"></div>
+                <h3 class="theme-section-title">Tonal palettes</h3>
+                <div class="theme-tonal" id="themeTonal"></div>
+            </div>
+
+            <div class="theme-view" data-view="export-choice" data-title="Export theme">
+                <div class="theme-group">
+                    <button class="theme-group-item theme-list-row" id="exportFileBtn" type="button">
+                        <span class="material-symbols-outlined theme-list-icon">description</span>
+                        <span class="theme-list-text">
+                            <span class="theme-list-title">File</span>
+                            <span class="theme-list-subtitle">Download theme.json</span>
+                        </span>
                     </button>
-                    <button class="theme-btn" id="importBtn">
-                        <span class="material-symbols-outlined">upload</span>
-                        <span class="theme-btn-label">Import</span>
-                    </button>
-                    <button class="theme-btn" id="resetBtn">
-                        <span class="material-symbols-outlined">restart_alt</span>
-                        <span class="theme-btn-label">Reset</span>
+                    <button class="theme-group-item theme-list-row" id="exportTextBtn" type="button">
+                        <span class="material-symbols-outlined theme-list-icon">code</span>
+                        <span class="theme-list-text">
+                            <span class="theme-list-title">Text</span>
+                            <span class="theme-list-subtitle">View the JSON</span>
+                        </span>
                     </button>
                 </div>
             </div>
 
-            <div class="theme-view" data-view="export-choice">
-                <button class="theme-back" data-back>
-                    <span class="material-symbols-outlined">arrow_back</span> Back
-                </button>
-                <div class="theme-view-title">Export theme</div>
-                <div class="theme-choice">
-                    <button class="theme-choice-btn" id="exportFileBtn">
-                        <span class="material-symbols-outlined">description</span>
-                        <span>File</span>
-                        <span class="theme-choice-hint">Download theme.json</span>
-                    </button>
-                    <button class="theme-choice-btn" id="exportTextBtn">
-                        <span class="material-symbols-outlined">code</span>
-                        <span>Text</span>
-                        <span class="theme-choice-hint">View the JSON</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="theme-view" data-view="export-text">
-                <button class="theme-back" data-back>
-                    <span class="material-symbols-outlined">arrow_back</span> Back
-                </button>
-                <div class="theme-view-title">Theme JSON</div>
+            <div class="theme-view" data-view="export-text" data-title="Theme JSON">
                 <pre class="theme-code" id="themeCode"></pre>
-                <button class="theme-btn theme-btn-wide" id="copyThemeBtn">
+                <button class="theme-btn" id="copyThemeBtn" type="button">
                     <span class="material-symbols-outlined">content_copy</span>
                     <span class="theme-btn-label">Copy</span>
                 </button>
             </div>
 
-            <div class="theme-view" data-view="import-choice">
-                <button class="theme-back" data-back>
-                    <span class="material-symbols-outlined">arrow_back</span> Back
-                </button>
-                <div class="theme-view-title">Import theme</div>
-                <div class="theme-choice">
-                    <button class="theme-choice-btn" id="importFileBtn">
-                        <span class="material-symbols-outlined">description</span>
-                        <span>File</span>
-                        <span class="theme-choice-hint">Pick a .json file</span>
+            <div class="theme-view" data-view="import-choice" data-title="Import theme">
+                <div class="theme-group">
+                    <button class="theme-group-item theme-list-row" id="importFileBtn" type="button">
+                        <span class="material-symbols-outlined theme-list-icon">description</span>
+                        <span class="theme-list-text">
+                            <span class="theme-list-title">File</span>
+                            <span class="theme-list-subtitle">Pick a .json file</span>
+                        </span>
                     </button>
-                    <button class="theme-choice-btn" id="importTextBtn">
-                        <span class="material-symbols-outlined">code</span>
-                        <span>Text</span>
-                        <span class="theme-choice-hint">Paste the JSON</span>
+                    <button class="theme-group-item theme-list-row" id="importTextBtn" type="button">
+                        <span class="material-symbols-outlined theme-list-icon">code</span>
+                        <span class="theme-list-text">
+                            <span class="theme-list-title">Text</span>
+                            <span class="theme-list-subtitle">Paste the JSON</span>
+                        </span>
                     </button>
                 </div>
             </div>
 
-            <div class="theme-view" data-view="import-text">
-                <button class="theme-back" data-back>
-                    <span class="material-symbols-outlined">arrow_back</span> Back
-                </button>
-                <div class="theme-view-title">Paste theme JSON</div>
-                <textarea class="theme-textarea" id="importArea" spellcheck="false" placeholder='{"alwaysUseAvatarTheme": false, ...}'></textarea>
-                <button class="theme-btn theme-btn-wide" id="applyImportBtn">
+            <div class="theme-view" data-view="import-text" data-title="Paste theme JSON">
+                <textarea class="theme-textarea" id="importArea" spellcheck="false" placeholder='{"version": 2, "source": "custom", ...}'></textarea>
+                <button class="theme-btn" id="applyImportBtn" type="button">
                     <span class="material-symbols-outlined">check</span>
                     <span class="theme-btn-label">Apply</span>
                 </button>
@@ -226,11 +336,31 @@
 
             <div class="theme-error" id="themeError"></div>
         </div>
-    </div>
+        <div class="theme-snackbar" id="themeSnackbar" role="status"></div>
+    </aside>
     <input type="file" id="themeFileInput" accept=".json,application/json" hidden>
 
+    <div class="lyrics-fullscreen" id="lyricsFullscreen" role="dialog" aria-modal="true" aria-label="Lyrics" hidden>
+        <img class="lyrics-fs-backdrop" id="lyricsFsBackdrop" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="">
+        <button class="theme-icon-btn lyrics-fs-close" id="lyricsFsClose" type="button" aria-label="Close fullscreen lyrics">
+            <span class="material-symbols-outlined">close_fullscreen</span>
+        </button>
+        <div class="lyrics-fs-info">
+            <img class="lyrics-fs-art" id="lyricsFsArt" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Album Art">
+            <div class="lyrics-fs-track">
+                <div class="lyrics-fs-name" id="lyricsFsTrack"></div>
+                <div class="lyrics-fs-artist" id="lyricsFsArtist"></div>
+                <div class="progress-container"><div class="progress-bar" id="lyricsFsProgress"></div></div>
+                <div class="time-info"><span id="lyricsFsCurrent">0:00</span><span id="lyricsFsTotal">0:00</span></div>
+            </div>
+        </div>
+        <div class="lyrics-fs-lyrics" id="lyricsFsSlot"></div>
+    </div>
+
+    <div class="listen-along-player" aria-hidden="true"><div id="listenAlongPlayer"></div></div>
+
     <header class="coder" id="home">
-        <img id="coder-avatar" class="coder-avatar" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Profile Picture">
+        <span class="coder-avatar-wrap"><img id="coder-avatar" class="coder-avatar" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Profile Picture"></span>
         <h1 id="coder-name" class="coder-name">Loading...</h1>
         <p class="coder-description">
             Full Stack Dev :)
@@ -248,7 +378,7 @@
             </a>
             <a href="https://t.me/codergg" class="social-app" target="_blank">
                 <div class="app-icon">
-                    <i class="fab fa-telegram"></i>
+                    <svg class="app-icon-svg" viewBox="0 0 448 512" fill="currentColor" aria-hidden="true"><path d="M446.7 98.6l-67.6 318.8c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 16.2 252.2c-22.1-6.9-22.5-22.1 4.6-32.7L418.2 66.4c18.4-6.9 34.5 4.1 28.5 32.2z"/></svg>
                 </div>
                 <div class="app-name">Telegram</div>
             </a>
@@ -301,6 +431,12 @@
                         <path d="M248 8C111.1 8 0 119.1 0 256s111.1 248 248 248 248-111.1 248-248S384.9 8 248 8zm100.7 364.9c-4.2 0-6.8-1.3 -10.7-3.6-62.4-37.6-135-39.2-206.7-24.5-3.9 1-9 2.6-11.9 2.6-9.7 0-15.8-7.7-15.8-15.8 0-10.3 6.1-15.2 13.6-16.8 81.9-18.1 165.6-16.5 237 26.2 6.1 3.9 9.7 7.4 9.7 16.5s-7.1 15.4-15.2 15.4zm26.9-65.6c-5.2 0-8.7-2.3-12.3-4.2-62.5-37-155.7-51.9-238.6-29.4-4.8 1.3-7.4 2.6-11.9 2.6-10.7 0-19.4-8.7-19.4-19.4s5.2-17.8 15.5-20.7c27.8-7.8 56.2-13.6 97.8-13.6 64.9 0 127.6 16.1 177 45.5 8.1 4.5 11.3 11 11.3 19.7-.1 10.8-8.5 19.5-19.4 19.5zm31-76.2c-5.2 0-8.4-1.3-12.9-3.9-71.2-42.5-198.5-52.7-280.9-29.7-3.6 1-8.1 2.6-12.9 2.6-13.2 0-23.3-10.3-23.3-23.6 0-13.6 8.4-21.3 17.4-23.9 35.2-10.3 74.6-15.2 117.5-15.2 73 0 149.5 15.2 205.4 47.8 7.8 4.5 12.9 10.7 12.9 22.6 0 13.6-11 23.3-23.2 23.3z" />
                     </svg>
                     <div class="spotify-title">Listening to Spotify</div>
+                    <div class="spotify-volume" id="spotifyVolume" hidden>
+                        <button class="theme-icon-btn spotify-volume-btn" id="listenAlongMute" type="button" aria-label="Mute">
+                            <span class="material-symbols-outlined" id="listenAlongMuteIcon">volume_up</span>
+                        </button>
+                        <input type="range" id="listenAlongVolume" min="0" max="100" step="1" value="100" aria-label="Volume">
+                    </div>
                 </div>
                 <div class="spotify-content">
                     <img id="albumArt" class="album-art" src="" alt="Album Art">
@@ -316,6 +452,11 @@
                         </div>
                     </div>
                 </div>
+                <div class="listen-along-status" id="listenAlongStatus" role="status"></div>
+                <button class="listen-along-btn" id="listenAlongBtn" type="button">
+                    <span class="material-symbols-outlined" id="listenAlongIcon">headphones</span>
+                    <span id="listenAlongLabel">Listen along</span>
+                </button>
                 <div class="activity-buttons" id="spotifyButtons"></div>
             </div>
             <div id="lyricsCard" class="lyrics-card">
@@ -324,6 +465,9 @@
                         <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6zM10 19a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/>
                     </svg>
                     <div class="lyrics-title">Lyrics</div>
+                    <button class="theme-icon-btn lyrics-fs-open" id="lyricsFsOpen" type="button" aria-label="Open lyrics in fullscreen" title="Fullscreen">
+                        <span class="material-symbols-outlined">open_in_full</span>
+                    </button>
                 </div>
                 <div id="lyricsContainer" class="lyrics-container"></div>
             </div>
@@ -333,23 +477,23 @@
     <section class="section-container games-section" id="games">
         <h2>Games</h2>
         <ul class="games-list">
-            <li onclick="window.open('https://namemc.com/profile/coder_gg', '_blank')">
+            <li data-href="https://namemc.com/profile/coder_gg" role="link" tabindex="0">
                 <img src="Photos/Minecraft.png" alt="Minecraft">
                 Minecraft
             </li>
-            <li onclick="window.open('https://gdbrowser.com/u/coder111000', '_blank')">
-                <img src="Photos/Geometry_Dash.png" alt="Geometry Dash" style="border-radius: 12px;">
+            <li data-href="https://gdbrowser.com/u/coder111000" role="link" tabindex="0">
+                <img src="Photos/Geometry_Dash.png" alt="Geometry Dash">
                 Geometry Dash
             </li>
-            <li onclick="window.open('https://store.epicgames.com/u/769973ee301c4beb82d98edd8e3b0848/details/rocket-league', '_blank')">
+            <li data-href="https://store.epicgames.com/u/769973ee301c4beb82d98edd8e3b0848/details/rocket-league" role="link" tabindex="0">
                 <img src="Photos/Rocket_League.png" alt="Rocket League">
                 Rocket League
             </li>
-            <li onclick="window.open('https://osu.ppy.sh/users/36014735', '_blank')">
+            <li data-href="https://osu.ppy.sh/users/36014735" role="link" tabindex="0">
                 <img src="Photos/OSU.png" alt="OSU!">
                 OSU!
             </li>
-            <li onclick="window.open('https://www.roblox.com/users/9179960118/profile', '_blank')">
+            <li data-href="https://www.roblox.com/users/9179960118/profile" role="link" tabindex="0">
                 <img src="Photos/Roblox.png" alt="Roblox">
                 Roblox
             </li>
@@ -358,21 +502,60 @@
 
     <section class="section-container tech-stack" id="tech-stack">
         <h2>Skills</h2>
-        <ul class="tech-list">
-            <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript">JavaScript</li>
-            <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript">TypeScript</li>
-            <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python">Python</li>
-            <li><i class="devicon-nodejs-plain tech-icon"></i>Node.js</li>
-            <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" alt="HTML5">HTML5</li>
-            <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" alt="CSS3">CSS3</li>
-            <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" alt="PHP">PHP</li>
-            <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bash/bash-original.svg" alt="Bash">Bash</li>
-            <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" alt="Batch">Batch</li>
-            <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/json/json-original.svg" alt="JSON">JSON</li>
-            <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/lua/lua-original.svg" alt="Lua">Lua</li>
-            <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java">Java</li>
-            <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/xml/xml-original.svg" alt="XML">XML</li>
-        </ul>
+        <div class="tech-groups">
+            <div class="tech-group tech-group-languages">
+                <h3 class="tech-group-title">Languages</h3>
+                <ul class="tech-list">
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript">JavaScript</li>
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript">TypeScript</li>
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python">Python</li>
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" alt="PHP">PHP</li>
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/lua/lua-original.svg" alt="Lua">Lua</li>
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java">Java</li>
+                </ul>
+            </div>
+            <div class="tech-group tech-group-web">
+                <h3 class="tech-group-title">Web</h3>
+                <ul class="tech-list">
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" alt="HTML5">HTML5</li>
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" alt="CSS3">CSS3</li>
+                    <li><i class="devicon-nodejs-plain tech-icon"></i>Node.js</li>
+                </ul>
+            </div>
+            <div class="tech-group tech-group-shell">
+                <h3 class="tech-group-title">Shell</h3>
+                <ul class="tech-list">
+                    <li><i class="devicon-bash-plain tech-icon tech-icon-mono"></i>Bash</li>
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" alt="Batch">Batch</li>
+                </ul>
+            </div>
+            <div class="tech-group tech-group-data">
+                <h3 class="tech-group-title">Data</h3>
+                <ul class="tech-list">
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/json/json-original.svg" alt="JSON">JSON</li>
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/xml/xml-original.svg" alt="XML">XML</li>
+                </ul>
+            </div>
+            <div class="tech-group tech-group-systems">
+                <h3 class="tech-group-title">Systems</h3>
+                <ul class="tech-list">
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cachyos/cachyos-original.svg" alt="CachyOS">CachyOS</li>
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/debian/debian-original.svg" alt="Debian">Debian</li>
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/archlinux/archlinux-original.svg" alt="Arch Linux">Arch Linux</li>
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" alt="Windows 10">Windows 10</li>
+                    <li><svg class="tech-icon-svg tech-icon-android" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.4395 5.5586c-.675 1.1664-1.352 2.3318-2.0274 3.498-.0366-.0155-.0742-.0286-.1113-.043-1.8249-.6957-3.484-.8-4.42-.787-1.8551.0185-3.3544.4643-4.2597.8203-.084-.1494-1.7526-3.021-2.0215-3.4864a1.1451 1.1451 0 0 0-.1406-.1914c-.3312-.364-.9054-.4859-1.379-.203-.475.282-.7136.9361-.3886 1.5019 1.9466 3.3696-.0966-.2158 1.9473 3.3593.0172.031-.4946.2642-1.3926 1.0177C2.8987 12.176.452 14.772 0 18.9902h24c-.119-1.1108-.3686-2.099-.7461-3.0683-.7438-1.9118-1.8435-3.2928-2.7402-4.1836a12.1048 12.1048 0 0 0-2.1309-1.6875c.6594-1.122 1.312-2.2559 1.9649-3.3848.2077-.3615.1886-.7956-.0079-1.1191a1.1001 1.1001 0 0 0-.8515-.5332c-.5225-.0536-.9392.3128-1.0488.5449zm-.0391 8.461c.3944.5926.324 1.3306-.1563 1.6503-.4799.3197-1.188.0985-1.582-.4941-.3944-.5927-.324-1.3307.1563-1.6504.4727-.315 1.1812-.1086 1.582.4941zM7.207 13.5273c.4803.3197.5506 1.0577.1563 1.6504-.394.5926-1.1038.8138-1.584.4941-.48-.3197-.5503-1.0577-.1563-1.6504.4008-.6021 1.1087-.8106 1.584-.4941z"/></svg>Android</li>
+                </ul>
+            </div>
+            <div class="tech-group tech-group-tools">
+                <h3 class="tech-group-title">Tools</h3>
+                <ul class="tech-list">
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" alt="Git">Git</li>
+                    <li><i class="devicon-github-original tech-icon tech-icon-mono"></i>GitHub</li>
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" alt="Docker">Docker</li>
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" alt="VS Code">VS Code</li>
+                </ul>
+            </div>
+        </div>
     </section>
 
     <section class="section-container projects" id="projects">
@@ -380,63 +563,63 @@
         <div class="project-filters">
             <div class="filter-dropdown">
                 <button class="dropdown-btn ripple-surface" id="filterBtn">
-                    <span class="material-symbols-outlined" style="margin-right: 4px; font-size: 1.1rem;">filter_list</span> Filter
+                    <span class="material-symbols-outlined">filter_list</span> Filter
                 </button>
                 <div class="dropdown-content" id="filterContent">
                     <a href="#" data-filter="all" class="active ripple-surface">
-                        <span class="material-symbols-outlined" style="margin-right: 8px; font-size: 1.1rem;">stars</span> All Projects
+                        <span class="material-symbols-outlined">stars</span> All Projects
                     </a>
                     <a href="#" data-filter="javascript">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" style="width: 16px; height: 16px;"> JavaScript
+                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript"> JavaScript
                     </a>
                     <a href="#" data-filter="typescript">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" style="width: 16px; height: 16px;"> TypeScript
+                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript"> TypeScript
                     </a>
                     <a href="#" data-filter="python">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" style="width: 16px; height: 16px;"> Python
+                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python"> Python
                     </a>
                     <a href="#" data-filter="nodejs">
-                        <i class="devicon-nodejs-plain" style="color: #1DB954;"></i> Node.js
+                        <i class="devicon-nodejs-plain tech-icon"></i> Node.js
                     </a>
                     <a href="#" data-filter="html">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" alt="HTML" style="width: 16px; height: 16px;"> HTML
+                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" alt="HTML"> HTML
                     </a>
                     <a href="#" data-filter="css">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" alt="CSS" style="width: 16px; height: 16px;"> CSS
+                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" alt="CSS"> CSS
                     </a>
                     <a href="#" data-filter="php">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" alt="PHP" style="width: 16px; height: 16px;"> PHP
+                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" alt="PHP"> PHP
                     </a>
                     <a href="#" data-filter="bash">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bash/bash-original.svg" alt="Bash" style="width: 16px; height: 16px;"> Bash
+                        <i class="devicon-bash-plain tech-icon tech-icon-mono"></i> Bash
                     </a>
                     <a href="#" data-filter="batch">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" alt="Batch" style="width: 16px; height: 16px;"> Batch
+                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" alt="Batch"> Batch
                     </a>
                     <a href="#" data-filter="lua">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/lua/lua-original.svg" alt="Lua" style="width: 16px; height: 16px;"> Lua
+                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/lua/lua-original.svg" alt="Lua"> Lua
                     </a>
                     <a href="#" data-filter="java">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" style="width: 16px; height: 16px;"> Java
+                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java"> Java
                     </a>
                     <a href="#" data-filter="json">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/json/json-original.svg" alt="JSON" style="width: 16px; height: 16px;"> JSON
+                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/json/json-original.svg" alt="JSON"> JSON
                     </a>
                     <a href="#" data-filter="xml">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/xml/xml-original.svg" alt="XML" style="width: 16px; height: 16px;"> XML
+                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/xml/xml-original.svg" alt="XML"> XML
                     </a>
                 </div>
             </div>
             <div class="filter-dropdown">
                 <button class="dropdown-btn ripple-surface" id="sortBtn">
-                    <span class="material-symbols-outlined" style="margin-right: 4px; font-size: 1.1rem;">sort</span> Sort
+                    <span class="material-symbols-outlined">sort</span> Sort
                 </button>
                 <div class="dropdown-content" id="sortContent">
                     <a href="#" data-sort="newest" class="active ripple-surface">
-                        <span class="material-symbols-outlined" style="margin-right: 8px; font-size: 1.1rem;">arrow_downward</span> Newest
+                        <span class="material-symbols-outlined">arrow_downward</span> Newest
                     </a>
                     <a href="#" data-sort="oldest">
-                        <span class="material-symbols-outlined" style="margin-right: 8px; font-size: 1.1rem;">arrow_upward</span> Oldest
+                        <span class="material-symbols-outlined">arrow_upward</span> Oldest
                     </a>
                 </div>
             </div>
@@ -453,6 +636,16 @@
         </div>
     </section>
 
-    <script src="script.js"></script>
+    <script src="js/profile.js"></script>
+    <script src="js/activities.js"></script>
+    <script src="js/spotify.js"></script>
+    <script src="js/presence.js"></script>
+    <script src="js/projects.js"></script>
+    <script src="js/lyrics.js"></script>
+    <script src="js/lyrics-fullscreen.js"></script>
+    <script src="js/listen-along.js"></script>
+    <script src="js/theme-editor.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
