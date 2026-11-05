@@ -4,7 +4,8 @@ const LISTEN_ALONG_MAX_CANDIDATES = 6;
 const LISTEN_ALONG_DRIFT_SECONDS = 0.75;
 const LISTEN_ALONG_SEEK_COOLDOWN_MS = 4000;
 const LISTEN_ALONG_SEEK_LEAD_SECONDS = 0.25;
-const LISTEN_ALONG_BLOCKED_AFTER_MS = 4000;
+const LISTEN_ALONG_BLOCKED_AFTER_MS = 10000;
+const LISTEN_ALONG_STUCK_AFTER_MS = 20000;
 const LISTEN_ALONG_UNWANTED = /\b(live|cover|remix|karaoke|instrumental|nightcore|slowed|sped up|reverb|8d|lyrics?)\b/i;
 
 const listenAlong = {
@@ -20,6 +21,8 @@ const listenAlong = {
     lastSeekAt: 0,
     loadStartedAt: 0,
     blocked: false,
+    showPlayer: false,
+    hasPlayed: false,
     syncTimer: null,
     clockSeconds: 0,
     clockAt: 0,
@@ -47,7 +50,7 @@ function renderListenAlongButton() {
     }
     document.getElementById('listenAlongBtn').classList.toggle('active', listenAlong.enabled && !listenAlong.blocked);
     document.getElementById('spotifyVolume').hidden = !listenAlong.enabled;
-    document.querySelector('.listen-along-player').classList.toggle('needs-tap', listenAlong.enabled && listenAlong.blocked);
+    document.querySelector('.listen-along-player').classList.toggle('needs-tap', listenAlong.enabled && listenAlong.showPlayer);
     const status = document.getElementById('listenAlongStatus');
     if (!listenAlong.enabled) status.textContent = '';
 }
@@ -167,6 +170,11 @@ async function loadListenAlongTrack() {
     if (listenAlong.loadedKey === track.key) return;
     listenAlong.loadedKey = track.key;
     const requestId = ++listenAlong.requestId;
+    listenAlong.candidates = [];
+    listenAlong.blocked = false;
+    listenAlong.showPlayer = false;
+    renderListenAlongButton();
+    listenAlong.player.pauseVideo();
     setListenAlongStatus('');
     try {
         const candidates = await findVideoCandidates(track);
@@ -186,14 +194,25 @@ async function loadListenAlongTrack() {
     }
 }
 
-function syncListenAlong() {
-    if (!listenAlong.enabled || !listenAlong.playerReady || !listenAlong.track) return;
-    const state = listenAlong.player.getPlayerState();
-    const waitingToStart = state === YT.PlayerState.UNSTARTED || state === YT.PlayerState.CUED;
-    if (waitingToStart && listenAlong.candidates.length && !listenAlong.blocked && Date.now() - listenAlong.loadStartedAt > LISTEN_ALONG_BLOCKED_AFTER_MS) {
+function checkListenAlongStart() {
+    if (listenAlong.blocked || !listenAlong.candidates[listenAlong.candidateIndex]) return;
+    const waited = Date.now() - listenAlong.loadStartedAt;
+    if (listenAlong.hasPlayed) {
+        if (waited > LISTEN_ALONG_STUCK_AFTER_MS && listenAlong.candidates[listenAlong.candidateIndex + 1]) {
+            handleListenAlongError();
+        }
+    } else if (waited > LISTEN_ALONG_BLOCKED_AFTER_MS) {
         listenAlong.blocked = true;
-        setListenAlongStatus('Your browser blocked autoplay, tap the video to start');
+        setListenAlongStatus('Not playing yet? Tap the button');
         renderListenAlongButton();
+    }
+}
+
+function syncListenAlong() {
+    if (!listenAlong.enabled || !listenAlong.playerReady || !listenAlong.track || !listenAlong.candidates.length) return;
+    const state = listenAlong.player.getPlayerState();
+    if (state === YT.PlayerState.UNSTARTED || state === YT.PlayerState.CUED) {
+        checkListenAlongStart();
     }
     if (state !== YT.PlayerState.PLAYING) return;
     const target = getListenAlongTargetSeconds();
@@ -206,7 +225,9 @@ function syncListenAlong() {
 
 function handleListenAlongState(event) {
     if (event.data !== YT.PlayerState.PLAYING) return;
+    listenAlong.hasPlayed = true;
     listenAlong.blocked = false;
+    listenAlong.showPlayer = false;
     renderListenAlongButton();
     setListenAlongStatus('');
     listenAlong.lastSeekAt = 0;
@@ -261,6 +282,7 @@ function startListenAlong() {
     listenAlong.enabled = true;
     listenAlong.loadedKey = null;
     listenAlong.blocked = false;
+    listenAlong.showPlayer = false;
     renderListenAlongButton();
     setListenAlongStatus('');
     if (!listenAlong.syncTimer) listenAlong.syncTimer = setInterval(syncListenAlong, 1000);
@@ -273,6 +295,7 @@ function stopListenAlong() {
     listenAlong.loadedKey = null;
     listenAlong.candidates = [];
     listenAlong.blocked = false;
+    listenAlong.showPlayer = false;
     listenAlong.requestId += 1;
     clearInterval(listenAlong.syncTimer);
     listenAlong.syncTimer = null;
@@ -332,10 +355,9 @@ function initializeListenAlong() {
     });
     document.getElementById('listenAlongBtn').addEventListener('click', () => {
         if (listenAlong.blocked) {
-            listenAlong.blocked = false;
-            listenAlong.loadStartedAt = Date.now();
-            listenAlong.player.seekTo(getListenAlongTargetSeconds(), true);
+            listenAlong.showPlayer = true;
             listenAlong.player.playVideo();
+            setListenAlongStatus('Tap the video to start');
             renderListenAlongButton();
         } else if (listenAlong.enabled) {
             stopListenAlong();
